@@ -2,7 +2,6 @@
 
 use crate::controler::connection::ConnectionUrls;
 use crate::model::beneficiaries::details::{Allergy, Detail, Presence};
-use log::error;
 use serde::Serialize;
 
 #[derive(Clone, Serialize)]
@@ -45,7 +44,6 @@ impl Detail {
         match res.status() {
             reqwest::StatusCode::OK => Ok(()),
             _ => {
-                error!("Failed to delete presence : {:?}", res.text().await?);
                 Err(anyhow::Error::msg("Failed to delete presence"))
             }
         }
@@ -62,7 +60,6 @@ impl Detail {
         match res.status() {
             reqwest::StatusCode::OK => Ok(()),
             _ => {
-                error!("Failed to insert allergy : {:?}", res.text().await?);
                 Err(anyhow::Error::msg("Failed to insert allergy"))
             }
         }
@@ -79,7 +76,6 @@ impl Detail {
         match res.status() {
             reqwest::StatusCode::OK => Ok(()),
             _ => {
-                error!("Failed to delete allergy : {:?}", res.text().await?);
                 Err(anyhow::Error::msg("Failed to delete allergy"))
             }
         }

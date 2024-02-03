@@ -3,8 +3,6 @@
 use chrono::Local;
 use dioxus_desktop::WindowCloseBehaviour::LastWindowExitsApp;
 use dioxus_desktop::{Config, LogicalSize, WindowBuilder, WindowCloseBehaviour};
-use log::{info, LevelFilter};
-use simple_logging::log_to_file;
 use std::fs;
 use std::fs::File;
 use std::path::Path;
@@ -16,11 +14,6 @@ mod view;
 
 fn main() {
     clear_graphs();
-    if let Err(e) = log_to_file(create_log_file(), LevelFilter::Info) {
-        eprintln!("Could not initiate logging due to error : {:?}", e);
-        log_to_file("public/logs/log.log", LevelFilter::Info).expect("Could not initiate logging");
-    };
-    info!("Initiating application");
     dioxus_desktop::launch_cfg(
         app::app,
         Config::default()
@@ -57,7 +50,6 @@ fn clear_graphs() {
     }
 }
 fn close_window() -> WindowCloseBehaviour {
-    info!("Closing application");
     clear_graphs();
     LastWindowExitsApp
 }

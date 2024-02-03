@@ -7,7 +7,6 @@ use bincode::Decode;
 use chrono::{Datelike, Local, NaiveDate};
 use dioxus::core::Scope;
 use dioxus_hooks::{use_future, UseSharedState};
-use log::error;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 
@@ -54,7 +53,6 @@ impl Beneficiaries {
         let token = Token::from(user);
         let benes = Self::get_all_beneficiary(token)
             .await
-            .map_err(|e| error!("Failed to get all beneficiaries : {}", e))
             .unwrap_or(vec![]);
         Beneficiaries::from(benes)
     }
@@ -77,7 +75,6 @@ impl Beneficiaries {
         };
         let benes = Self::search(token_search)
             .await
-            .map_err(|e| error!("{}", e))
             .unwrap_or(vec![]);
 
         Beneficiaries::from(benes)
@@ -128,7 +125,6 @@ impl Beneficiary {
         let future = use_future(cx, (), |_| async move {
             Self::create(token)
                 .await
-                .map_err(|e| error!("Failed to create a beneficiary : {}", e))
                 .unwrap_or(Self::default())
         });
         future.value().unwrap().to_owned()
@@ -144,7 +140,6 @@ impl Beneficiary {
         let token_id: TokenBeneficiaryId = TokenBeneficiaryId::new(Token::from(user), id);
         Self::get_beneficiary_details(token_id)
             .await
-            .map_err(|e| error!("{}", e))
             .unwrap_or((Self::default(), Detail::default()))
     }
 

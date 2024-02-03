@@ -42,9 +42,9 @@ impl UserLogin {
                     val.role = other.role;
                 });
                 navigator.push("/home");
-            }
-            Err(err) => {
-                log::error!("Failed to login: {}", err);
+            },
+            Err(e) => {
+                println!("{:?}", e);
             }
         }
         Ok(())

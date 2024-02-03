@@ -12,8 +12,6 @@ dioxus-hooks = "0.4.3"
 dioxus-router = "0.4.3"
 dioxus-router-macro = "0.4.3"
 chrono = "0.4.33"
-simple-logging = "2.0.2"
-log = "0.4.20"
 anyhow = "1.0.79"
 rust_xlsxwriter = { version = "0.62.0" , features = ["chrono"]}
 serde = { version = "1.0.196", features = ["derive"] }

@@ -7,7 +7,6 @@ use crate::view::{admin, ts, user};
 use dioxus::prelude::*;
 use dioxus_hooks::use_shared_state;
 use dioxus_router::hooks::use_navigator;
-use log::info;
 
 pub fn Home(cx: Scope) -> Element {
     let user = use_shared_state::<User>(cx).unwrap();
@@ -40,7 +39,6 @@ fn load_beneficiaries(
     user: UseSharedState<User>,
     use_beneficiaries: &UseSharedState<Beneficiaries>,
 ) {
-    info!("Loading beneficiaries");
     let _ = use_future(cx, (), |_| {
         let use_beneficiaries = use_beneficiaries.clone();
         let user = user.clone();
@@ -54,7 +52,6 @@ fn load_beneficiaries(
 }
 
 fn load_stats(cx: Scope, user: UseSharedState<User>, stats: UseSharedState<Stats>) {
-    info!("Loading stats");
     let _ = use_future(cx, (), |_| {
         let user = user.clone();
         let stats = stats.clone();

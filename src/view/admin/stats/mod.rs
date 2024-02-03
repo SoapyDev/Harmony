@@ -7,12 +7,10 @@ use crate::model::stats::stats::{StatType, Stats};
 use crate::view::inputs::dates::DateMut;
 use crate::view::inputs::selectables::SelectInputMut;
 use dioxus::prelude::*;
-use log::{error, info};
 use std::str::FromStr;
 
 #[component]
 pub(crate) fn StatsPage(cx: Scope) -> Element {
-    info!("Moving to stats");
     let use_stats = use_shared_state::<Stats>(cx).unwrap();
 
     if !use_stats.read().is_empty() {
@@ -174,16 +172,12 @@ fn Graph<'a>(
     graph_values: &'a UseRef<GraphValues>,
     dates: &'a UseRef<DateRange>,
 ) -> Element {
-    let mut builder = GraphBuilder::new(
+    let builder = GraphBuilder::new(
         graph_values.read().data.clone(),
         graph_values.read().graph,
         *dates.read(),
         graph_values.read().filter,
     );
-
-    if let Err(e) = builder.draw() {
-        error!("Error while drawing graph: {}", e);
-    };
 
     render! {
         div{

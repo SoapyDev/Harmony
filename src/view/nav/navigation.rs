@@ -2,14 +2,12 @@ use crate::model::beneficiaries::beneficiary::Beneficiaries;
 use crate::model::users::{role::Role, user::User};
 use crate::view::admin::{stats::StatsPage, users::Users};
 use crate::view::login::Login;
-use crate::view::nav::export::export;
 use crate::view::nav::home::Home;
 use crate::view::ts::beneficiary::BeneficiaryPage;
 use dioxus::prelude::*;
 use dioxus_router::components::{Link, Outlet};
 use dioxus_router::hooks::use_navigator;
 use dioxus_router::prelude::Routable;
-use log::error;
 
 #[rustfmt::skip]
 #[derive(Clone, Debug, PartialEq, Routable)]
@@ -30,7 +28,6 @@ pub(crate) enum Route {
 pub(crate) fn Nav(cx: Scope) -> Element {
     let mut user = use_shared_state::<User>(cx);
     if user.is_none() {
-        error!("Could not find a user in the shared state, creating a new user");
         use_shared_state_provider(cx, User::new);
         user = use_shared_state::<User>(cx);
     }
@@ -61,9 +58,6 @@ fn render_admin_nav<'a>(cx: Scope<'a>, user: &UseSharedState<User>) -> Element<'
             div{
                 button {
                     onclick: move |_| {
-                        if export(cx).is_err(){
-                           error!("Could not export the data due to : {:?}", export(cx).err());
-                        };
                     },
                     img{ src: "./src/assets/icon/parameters.svg"},
                 }
