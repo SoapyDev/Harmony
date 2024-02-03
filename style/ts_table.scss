@@ -1,0 +1,10 @@
+.beneficiaries-container table {
+  height: 75vh;
+  width: 90%;
+}
+
+@media (min-width: 1300px) {
+  .beneficiaries-container {
+    width: 80%;
+  }
+}

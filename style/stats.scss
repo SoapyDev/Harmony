@@ -1,0 +1,145 @@
+@import "root";
+@import "inputs";
+
+.positive {
+  color: $vivid-green;
+}
+
+.positive::before {
+  content: "+";
+  color: $vivid-green;
+}
+
+.negative {
+  color: $red;
+}
+
+.neutral {
+  color: $yellow;
+}
+
+.stats-grid {
+  @include flex-col;
+  height: $height-full;
+  width: $width-half;
+  @include center;
+
+  .stats-container {
+    @include flex-row($align: flex-start);
+    width: $width-full;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    background: $layer-color;
+    border-radius: $radius;
+
+    .date-row{
+      @include flex-row($wrap: nowrap, $justify: space-between);
+      width: 80%;
+      margin: 0 auto;
+    }
+    .col{
+      width: 47%;
+      @include flex-row($wrap: nowrap, $justify: center, $align: center);
+      gap: 0.5rem;
+
+      label{
+        word-break: keep-all;
+      }
+    }
+    .date-input{
+      background: $overlay-color;
+      color: $text-color;
+      text-align: center;
+      width: 80%;
+    }
+
+    ul {
+      @include flex-col($align: flex-start);
+      gap: 0.5rem;
+      list-style: none;
+    }
+
+    .stats-title {
+      @include flex-col;
+      gap: 1rem;
+      width: $width-full;
+      max-width: 450px;
+      min-width: 350px;
+    }
+
+    .stats-beneficiary {
+      @include flex-row;
+      gap: 2rem;
+      margin-bottom: 1rem;
+    }
+  }
+
+  .stats-graphs {
+    @include flex-col($justify: space-around);
+    width: $width-full;
+    height: $height-full;
+
+    .img-row {
+      @include flex-row;
+      width: $width-full;
+      gap: 2rem;
+
+      .img-widget {
+        @include flex-col;
+        gap: 2rem;
+
+        .img-inputs {
+          @include select;
+          @include flex-row($wrap: nowrap);
+          width: 100%;
+          gap: 1rem;
+
+          select {
+            width: fit-content;
+          }
+        }
+
+        img {
+          width: $width-full;
+          min-width: 500px;
+          height: auto;
+        }
+      }
+    }
+  }
+}
+
+@media (min-width: 1100px) {
+  .stats-grid .stats-graphs .img-row {
+    margin-bottom: 2rem;
+    flex-flow: row nowrap;
+  }
+}
+
+@media (min-width: 1500px) {
+  .stats-grid {
+    @include flex-row;
+    gap: 1rem;
+    width: 100vw;
+    height: 90vh;
+
+    .stats-container {
+      @include flex-col;
+      width: fit-content;
+      height: 100%;
+    }
+
+    .stats-graphs {
+      width: 70%;
+      height: 100%;
+
+      .img-row {
+        .img-widget img {
+          width: 100%;
+          height: auto;
+          max-height: 35vh;
+        }
+      }
+    }
+  }
+}

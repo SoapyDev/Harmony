@@ -1,0 +1,272 @@
+@import "root";
+@import "inputs";
+
+body {
+  width: 100vw;
+  height: 100vh;
+  background-image: url("./src/assets/background/home.svg");
+}
+
+main {
+  height: 100%;
+}
+
+.home-container {
+  @include center;
+  @include flex-col;
+  height: $height-half;
+  width: $width-half;
+}
+
+.beneficiaries-container {
+  @include flex-col(center);
+  width: 100%;
+  gap: 2rem;
+}
+
+.search-input {
+  width: 50%;
+  min-width: 300px;
+  max-width: 500px;
+  height: 2.5rem;
+  text-align: center;
+  @include center;
+  border-radius: $radius;
+  border: none;
+  padding: 0.5rem;
+  font-size: $text-size;
+  background: $inputs-color;
+}
+
+.beneficiaries-container table {
+  height: 35vh;
+  width: 100%;
+  border-radius: $radius;
+  border: none;
+  background: $inputs-color;
+}
+
+.beneficiaries-container table thead {
+  height: 3rem;
+  padding-right: 17px;
+  background: $table-head;
+  border-radius: $radius $radius 0 0;
+  width: 100%;
+}
+
+.beneficiaries-container table tbody {
+  height: calc(100% - 3rem);
+  width: $width-full;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.beneficiaries-container table tr {
+  width: $width-full;
+  border-bottom: 1px solid $text-color;
+  display: flex;
+  flex-flow: nowrap;
+  justify-content: space-between;
+  align-items: center;
+  height: 3rem;
+  padding: 0.25rem;
+  @include transition(background-color);
+}
+
+
+.beneficiaries-container table tbody tr:hover,
+.beneficiaries-container table tbody tr:focus,
+.beneficiaries-container table tbody tr:active,
+.selected {
+  background: $overlay-color;
+  cursor: pointer;
+}
+
+.beneficiaries-container table thead tr th:first-of-type {
+  width: 11rem;
+}
+
+.beneficiaries-container table tbody tr td:first-of-type {
+  word-wrap: anywhere;
+  width: 11rem;
+}
+
+.beneficiaries-container table thead tr th:nth-of-type(2),
+.beneficiaries-container table tbody tr td:nth-of-type(2) {
+  width: 8rem;
+}
+
+
+.beneficiaries-container th, td {
+  padding: 0.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: #E3E3E3;
+  width: calc(90vw / 7);
+  display: block;
+}
+
+.beneficiaries-container th {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.beneficiaries-container th:first-of-type {
+  border-radius: 0.5rem 0 0 0;
+}
+
+.beneficiaries-container th:last-of-type {
+  border-radius: 0 0.5rem 0 0;
+}
+
+.beneficiary-container {
+  height: 45vh;
+  width: 100%;
+}
+
+.beneficiary-container form {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: 2fr 1fr;
+  grid-gap: 2rem;
+  @include calendar;
+  @include select;
+  @include textarea;
+  @include tel;
+  @include numbers;
+  @include date;
+  @include switch;
+}
+
+.input-block,
+.calendar {
+  grid-row: 1;
+}
+
+.notes,
+.allergies {
+  grid-row: 2;
+}
+
+.input-block {
+  grid-column: span 2;
+}
+
+.calendar {
+  grid-column: 3;
+}
+
+.notes {
+  grid-column: 1 / 3;
+}
+
+.allergies {
+  grid-column: 3;
+}
+
+.input-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  height: 100%;
+  gap: 0.125rem;
+}
+
+.beneficiary-container .row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 1.5rem;
+  height: auto;
+}
+
+
+.beneficiary-container .notes .col,
+.beneficiary-container .allergies .col {
+  height: 100%;
+}
+
+.inputs-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  height: auto;
+}
+
+
+@media (min-width: 1300px) {
+  .home-container {
+    @include flex-row;
+  }
+  .beneficiaries-container {
+    width: 53%;
+    height: 95%;
+
+    table {
+      width: 100%;
+      height: 90%;
+    }
+  }
+  .beneficiary-container {
+    width: 40%;
+    height: 90%;
+
+
+    form {
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: 1fr 1fr 1fr;
+      grid-gap: 2rem;
+    }
+
+    .input-block {
+      grid-row: 1;
+    }
+
+    .allergies,
+    .calendar {
+      grid-row: 2;
+    }
+
+    .notes {
+      grid-row: 3;
+    }
+
+    .input-block {
+      grid-column: span 2;
+    }
+
+    .allergies {
+      grid-column: 1;
+    }
+
+    .calendar {
+      grid-column: 2;
+    }
+
+    .notes {
+      grid-column: span 2;
+    }
+  }
+}
+
+.add-button {
+  padding: 1rem 2rem;
+  border-radius: $radius;
+  background: $disabled-blue;
+  font-size: $text-size;
+  border: none;
+  cursor: pointer;
+  @include transition(background transition);
+}
+
+.add-button:hover {
+  background: $blue;
+  transform: scale(0.9);
+}

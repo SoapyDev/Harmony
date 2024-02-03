@@ -1,0 +1,101 @@
+@import url(https://fonts.bunny.net/css?family=inter:200,400,600);
+@import 'root';
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  background-color: #000000;
+  overflow-y: auto;
+  overflow-x: hidden;
+  font-family: Inter, sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+  width: 100vw;
+}
+
+body {
+  background-image: $background;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+
+nav {
+  @include flex-row($justify: space-between);
+  padding: 0.25rem 2rem;
+  background: $navigation-color;
+  font-size: $text-size;
+  color: $navigation-text;
+  width: 100%;
+}
+
+nav ul {
+  @include flex-row($justify: center, $align: center);
+  gap: 2rem;
+  list-style: none;
+}
+
+nav img {
+  height: 100%;
+  max-width: 60px;
+}
+
+nav div {
+  @include flex-row($justify: center, $align: center);
+  gap: 1rem;
+}
+
+nav div button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  outline: none;
+}
+
+nav div img {
+  height: 100%;
+  max-width: 30px;
+  max-height: 30px;
+  opacity: 0.7;
+  @include transition(opacity)
+}
+
+
+nav div img:hover {
+  opacity: 1;
+}
+
+nav a {
+  text-decoration: none;
+  color: $navigation-text;
+}
+
+nav a:hover,
+nav a:focus,
+nav a:active,
+nav a.active {
+  text-decoration: underline;
+}
+
+
+h1,
+h2,
+h3,
+h4,
+p,
+div,
+label,
+span,
+td,
+th,
+input,
+select,
+option,
+li {
+  color: $text-color;
+}

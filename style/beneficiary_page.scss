@@ -1,0 +1,111 @@
+@import "root";
+@import "inputs";
+
+
+.logout {
+  width: 100%;
+  max-width: 60px;
+  height: auto;
+  max-height: 48px;
+}
+
+.header {
+  @include center(2rem, 2rem);
+  width: 80%;
+
+
+  .back-button {
+    background: transparent;
+    width: fit-content;
+    border: none;
+    max-width: 48px;
+    @include transition(transform);
+
+    img {
+      width: 100%;
+    }
+  }
+
+  .back-button:hover {
+    cursor: pointer;
+    transform: scale(0.9);
+  }
+}
+
+.beneficiary-container {
+  @include select;
+  @include textarea;
+  @include date;
+  @include tel;
+  @include switch;
+  @include calendar;
+
+
+  .form {
+    @include flex-col;
+    @include center;
+    width: 80%;
+    gap: 2.5rem;
+    padding: 4rem 0;
+    border-bottom: 2px solid $table-separator;
+
+    input {
+      text-align: center;
+    }
+
+    select,
+    option {
+      text-align: center;
+    }
+
+    .col:not(.full-width) {
+      width: 30%;
+    }
+
+    .col:has(.full-width) {
+      width: 100%;
+    }
+
+    .calendar .col {
+      width: 100%;
+      max-width: 350px;
+      @include center;
+    }
+
+    .calendar {
+      width: 30%;
+      @include center;
+    }
+
+    .calendar-header {
+      width: 100%;
+    }
+
+    .col:has(.span-2) {
+      width: 63%;
+    }
+
+    .span-2 {
+      width: 100%;
+    }
+
+    .row {
+      @include flex-row(space-between);
+      @include center;
+      gap: 2rem;
+      width: 100%;
+
+      .select {
+        width: 100%;
+
+        option {
+          text-align: center;
+        }
+      }
+    }
+  }
+
+  .private-form.form {
+    border-bottom: none;
+  }
+}

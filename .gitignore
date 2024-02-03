@@ -1,11 +1,5 @@
-/target
 .env
-**/{logo.svg, asbc.svg, icon.png}
 /dist
-**/logs
-**/images
+/target
 /.sass-cache
-/style
-/output
-/data
-*/*.scss
+/output/{log, graph, icons}/*
