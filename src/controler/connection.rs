@@ -11,6 +11,10 @@ use std::fmt::{Display, Formatter};
 pub(crate) enum ConnectionUrls {
     Test,
     Login,
+    GetUsers,
+    CreateUser,
+    UpdateUser,
+    DeleteUser,
     GetBeneficiaries,
     GetBeneficiary,
     SearchBeneficiary,
@@ -18,6 +22,8 @@ pub(crate) enum ConnectionUrls {
     UpdateBeneficiary,
     InsertPresence,
     DeletePresence,
+    InsertAllergy,
+    DeleteAllergy,
     GetStats,
 }
 
@@ -27,6 +33,10 @@ impl Display for ConnectionUrls {
         match self {
             ConnectionUrls::Test => write!(f, "{}", base_url),
             ConnectionUrls::Login => write!(f, "{}/login", base_url),
+            ConnectionUrls::GetUsers => write!(f, "{}/getUsers", base_url),
+            ConnectionUrls::CreateUser => write!(f, "{}/createUser", base_url),
+            ConnectionUrls::UpdateUser => write!(f, "{}/updateUser", base_url),
+            ConnectionUrls::DeleteUser => write!(f, "{}/deleteUser", base_url),
             ConnectionUrls::GetBeneficiaries => write!(f, "{}/getBeneficiaries", base_url),
             ConnectionUrls::GetBeneficiary => write!(f, "{}/getBeneficiary", base_url),
             ConnectionUrls::SearchBeneficiary => write!(f, "{}/searchBeneficiaries", base_url),
@@ -34,6 +44,8 @@ impl Display for ConnectionUrls {
             ConnectionUrls::UpdateBeneficiary => write!(f, "{}/updateBeneficiary", base_url),
             ConnectionUrls::InsertPresence => write!(f, "{}/insertPresence", base_url),
             ConnectionUrls::DeletePresence => write!(f, "{}/deletePresence", base_url),
+            ConnectionUrls::InsertAllergy => write!(f, "{}/insertAllergy", base_url),
+            ConnectionUrls::DeleteAllergy => write!(f, "{}/deleteAllergy", base_url),
             ConnectionUrls::GetStats => write!(f, "{}/getStats", base_url),
         }
     }

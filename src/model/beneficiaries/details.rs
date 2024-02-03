@@ -1,6 +1,6 @@
 #![allow(non_snake_case)]
 
-use crate::controler::details::TokenPresence;
+use crate::controler::details::{TokenAllergy, TokenPresence};
 use crate::model::users::user::User;
 use bincode::{Decode, Encode};
 use dioxus_hooks::{UseRef, UseSharedState};
@@ -22,7 +22,37 @@ impl Detail {
             .collect::<Vec<String>>()
     }
 
-    pub(crate) async fn push(
+    pub(crate) async fn add_allergy(
+        id: i32,
+        allergy: &String,
+        user: UseSharedState<User>,
+    ) -> Result<(), anyhow::Error> {
+        let token = TokenAllergy {
+            Token: user.read().session.clone(),
+            Allergy: Allergy {
+                BeneficiaryId: id,
+                Allergy: allergy.to_string(),
+            },
+        };
+        Self::insert_allergy(token).await
+    }
+
+    pub(crate) async fn remove_allergy(
+        id: i32,
+        allergy: &String,
+        user: UseSharedState<User>,
+    ) -> Result<(), anyhow::Error> {
+        let token = TokenAllergy {
+            Token: user.read().session.clone(),
+            Allergy: Allergy {
+                BeneficiaryId: id,
+                Allergy: allergy.to_string(),
+            },
+        };
+        Self::delete_allergy(token).await
+    }
+
+    pub(crate) async fn push_presence(
         user: UseSharedState<User>,
         detail: &UseRef<Detail>,
         presence: Presence,
@@ -45,7 +75,7 @@ impl Detail {
         false
     }
 
-    pub(crate) async fn pop(
+    pub(crate) async fn pop_presence(
         user: UseSharedState<User>,
         detail: &UseRef<Detail>,
         presence: Presence,
@@ -75,7 +105,7 @@ pub(crate) struct Presence {
     pub(crate) BeneficiaryId: i32,
     pub(crate) Date: String,
 }
-#[derive(Encode, Decode, Serialize, Deserialize, Clone)]
+#[derive(Encode, Decode, Serialize, Deserialize, Clone, Default)]
 pub(crate) struct Allergy {
     pub(crate) BeneficiaryId: i32,
     pub(crate) Allergy: String,

@@ -39,7 +39,7 @@ pub fn Home(cx: Scope) -> Element {
                 BeneficiaryId: use_beneficiary.read().Id,
                 Date: date.clone(),
             };
-            if Detail::push(user, &use_details, presence.clone()).await {
+            if Detail::push_presence(user, &use_details, presence.clone()).await {
                 use_details.with_mut(|val| val.presences.push(presence));
                 use_beneficiary.with_mut(|val| val.set_last_presence(date));
                 use_beneficiaries.with_mut(|val| val.update(&use_beneficiary.read()));
@@ -62,7 +62,7 @@ pub fn Home(cx: Scope) -> Element {
                 Date: date.clone(),
             };
 
-            if Detail::pop(user, &use_details, presence).await {
+            if Detail::pop_presence(user, &use_details, presence).await {
                 use_details.with_mut(|val| val.presences.retain(|p| p.Date != date));
                 use_beneficiary.with_mut(|val| val.set_last_presence(date));
                 use_beneficiaries.with_mut(|val| val.update(&use_beneficiary.read()));

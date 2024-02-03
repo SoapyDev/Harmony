@@ -53,7 +53,7 @@ pub(crate) fn Login(cx: Scope) -> Element {
                     Username{
                         min: 2,
                         max: 45,
-                        label: "Nom d'usager",
+                        label: "Nom d'utilisateur",
                         user: user.clone(),
                     }
                     Password{
@@ -63,7 +63,7 @@ pub(crate) fn Login(cx: Scope) -> Element {
                         user: user.clone(),
                     }
                     SubmitButton{
-                       label : "Connection",
+                       label : "Connexion",
                     }
 
                 }

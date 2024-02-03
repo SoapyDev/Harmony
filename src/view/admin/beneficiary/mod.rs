@@ -8,7 +8,9 @@ use crate::model::users::user::User;
 use crate::view::inputs::calendar::{get_weeks, CalendarInputMut, Day};
 use crate::view::inputs::dates::DateMut;
 use crate::view::inputs::numbers::NumberInputMut;
-use crate::view::inputs::selectables::{get_selected_months, get_selected_years, SelectInputMut};
+use crate::view::inputs::selectables::{
+    get_selected_months, get_selected_years, AllergiesInputMut, SelectInputMut,
+};
 use crate::view::inputs::switches::SwitchInputMut;
 use crate::view::inputs::textareas::TextAreaMut;
 use crate::view::inputs::texts::TextInputMut;
@@ -51,7 +53,7 @@ pub fn Home(cx: Scope) -> Element {
                 BeneficiaryId: use_beneficiary.read().Id,
                 Date: date.clone(),
             };
-            if Detail::push(user, &use_detail, presence.clone()).await {
+            if Detail::push_presence(user, &use_detail, presence.clone()).await {
                 use_detail.with_mut(|val| val.presences.push(presence));
                 use_beneficiary.with_mut(|val| val.set_last_presence(date));
                 use_beneficiaries.with_mut(|val| val.update(&use_beneficiary.read()));
@@ -75,7 +77,7 @@ pub fn Home(cx: Scope) -> Element {
                 Date: date.clone(),
             };
 
-            if Detail::pop(user, &use_detail, presence).await {
+            if Detail::pop_presence(user, &use_detail, presence).await {
                 use_detail.with_mut(|val| val.presences.retain(|p| p.Date != date));
                 use_beneficiary.with_mut(|val| val.set_last_presence(date));
                 use_beneficiaries.with_mut(|val| val.update(&use_beneficiary.read()));
@@ -162,7 +164,7 @@ pub fn Home(cx: Scope) -> Element {
                                     values: Origins::get_selectable_values(),
                                     list: Origins::get_labels(),
                                     is_multiple: false ,
-                                    label: "Pays d'origine",
+                                    label: "Origine",
                                     class: "select"
                                 },
                             },
@@ -218,20 +220,9 @@ pub fn Home(cx: Scope) -> Element {
                     },
                     div{
                         class: "form-group allergies",
-                        div{
-                            class: "col",
-                            label{ "Allergies" },
-                            div{
-                                class: "select multiple",
-                                select{
-                                    multiple: true,
-                                    for allergy in use_detail.read().get_allergies().iter(){
-                                        option{
-                                            "{allergy}",
-                                        }
-                                    }
-                                }
-                            }
+                        AllergiesInputMut{
+                            beneficiary_id: use_beneficiary.read().Id,
+                            details: use_detail,
                         },
                     },
                    div{

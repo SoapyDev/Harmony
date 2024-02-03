@@ -71,28 +71,28 @@ pub(crate) fn StatsPage(cx: Scope) -> Element {
                         }
                         div{
                             class: "stats-title",
-                            h3{"Beneficiaires"}
+                            h3{"Bénéficiaires"}
                             div{
                                 class: "stats-beneficiary",
                                 ul{
                                     class: "stats-values",
                                     li{"Totaux : {statistiques.total}"}
-                                    li{"Totaux Actif : {statistiques.active}"}
-                                    li{"Nouveau : {statistiques.visits}"}
+                                    li{"Totaux actifs : {statistiques.active}"}
+                                    li{"Nouveaux : {statistiques.visits}"}
                                 }
                             }
                         }
                         div{
                             class: "stats-title",
-                            h3{"Persona"}
+                            h3{"Personna"}
                             div{
                                 class: "stats-persona",
                                 ul{
                                     li{"Âge : {statistiques.age}"}
                                     li{"Sexe : {statistiques.sexe}"}
-                                    li{"Language : {statistiques.language}"}
+                                    li{"Langue : {statistiques.language}"}
                                     li{"Origine : {statistiques.origin}"}
-                                    li{"Situation Familiale : {statistiques.family_situation}"}
+                                    li{"Situation familiale : {statistiques.family_situation}"}
                                     li{"Enfants : {statistiques.kid}"}
                                     li{"Ville : {statistiques.city}"}
                                     li{"Éducation : {statistiques.study}"}

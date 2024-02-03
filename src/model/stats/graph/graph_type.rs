@@ -220,8 +220,13 @@ impl GraphType {
     }
 
     fn format_line(&self, data: Vec<DateData>) -> GraphData {
-        data.into_iter().fold((vec![], vec![]), |mut acc, e| {
-            acc.0.push(e.values);
+        let field_len = data.first().unwrap_or(&DateData::default()).values.len();
+        let values = vec![vec![]; field_len];
+        data.into_iter().fold((values, vec![]), |mut acc, e| {
+            for (i, value) in e.values.iter().enumerate() {
+                acc.0[i].push(*value);
+            }
+
             acc.1.push(e.date);
             acc
         })

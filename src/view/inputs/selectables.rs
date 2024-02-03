@@ -1,3 +1,5 @@
+use crate::model::beneficiaries::details::{Allergy, Detail};
+use crate::model::users::user::User;
 use chrono::{Datelike, Local};
 use dioxus::prelude::*;
 
@@ -73,6 +75,150 @@ pub fn SelectInputMut<'a>(cx: Scope<'a, SelectChangeEvent<'a>>) -> Element<'a> {
                                 key: "{element}",
                                 value: "{element}",
                                 "{use_list[i]}",
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+static ALLERGIES: &[&str; 13] = &[
+    "Noix",
+    "Arachides",
+    "Lactose",
+    "Gluten",
+    "Oeufs",
+    "Fruits de mer",
+    "Poisson",
+    "Ble",
+    "Soja",
+    "Sesame",
+    "Moutarde",
+    "Sulfites",
+    "Autre",
+];
+
+#[component]
+pub(crate) fn AllergiesInputMut<'a>(
+    cx: Scope,
+    beneficiary_id: i32,
+    details: &'a UseRef<Detail>,
+) -> Element {
+    let allergy_list = use_ref(cx, || ALLERGIES.to_vec());
+    let selected_allergy = use_state(cx, || "".to_string());
+    let user = use_shared_state::<User>(cx).unwrap();
+    let use_is_add = use_state(cx, || false);
+    let use_is_remove = use_state(cx, || false);
+
+    let _add = use_future(cx, use_is_add, |add| {
+        let selected_allergy = selected_allergy.clone();
+        let details = details.to_owned().clone();
+        let beneficiary_id = *beneficiary_id;
+        let user = user.clone();
+
+        async move {
+            if *add.get() {
+                if let Ok(()) =
+                    Detail::add_allergy(beneficiary_id, selected_allergy.get(), user.clone()).await
+                {
+                    details.with_mut(|detail| {
+                        detail.allergies.push(Allergy {
+                            BeneficiaryId: beneficiary_id,
+                            Allergy: selected_allergy.get().clone(),
+                        })
+                    });
+                }
+                add.set(false);
+            }
+        }
+    });
+
+    let _remove = use_future(cx, use_is_remove, |remove| {
+        let selected_allergy = selected_allergy.clone();
+        let details = details.to_owned().clone();
+        let beneficiary_id = *beneficiary_id;
+        let user = user.clone();
+
+        async move {
+            if *remove.get() {
+                if let Ok(()) =
+                    Detail::remove_allergy(beneficiary_id, selected_allergy.get(), user.clone())
+                        .await
+                {
+                    details.with_mut(|detail| {
+                        detail
+                            .allergies
+                            .retain(|allergy| &allergy.Allergy != selected_allergy.get());
+                    });
+                }
+                remove.set(false);
+            }
+        }
+    });
+
+    render! {
+        div{
+            class: "row",
+            div{
+                class: "col",
+                label {"Allergies"},
+                select {
+                    onchange: |evt| {
+                       selected_allergy.set(evt.value.to_string());
+                    },
+                    class : "form-control",
+                    multiple : true,
+                    for element in allergy_list.read().iter(){
+                        if !details.read().allergies.iter().any(|a| a.Allergy == *element) {
+                            render!{
+                                option{
+                                    selected: "{selected_allergy.get() == *element}",
+                                    key: "{element}",
+                                    value: "{element}",
+                                    "{element}",
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            div{
+                class: "col",
+                button{
+                    onclick: |_|{
+                        if details.read().allergies.len() < ALLERGIES.len() {
+                            use_is_add.set(true);
+                        };
+                    },
+                    ">>"
+                },
+                button{
+                    onclick: |_|{
+                        if  !details.read().allergies.is_empty() {
+                            use_is_remove.set(true);
+                        };
+                    },
+                    "<<"
+                },
+            }
+            div{
+                class: "col",
+                label {"Bénéficiaire"},
+                select {
+                    onchange: |evt| {
+                      selected_allergy.set(evt.value.to_string());
+                    },
+                    class : "form-control",
+                    multiple : true,
+                    for element in details.read().allergies.iter(){
+                        render!{
+                            option{
+                                selected: "{selected_allergy.get() == &element.Allergy}",
+                                key: "{element.Allergy}",
+                                value: "{element.Allergy}",
+                                "{element.Allergy}",
                             }
                         }
                     }

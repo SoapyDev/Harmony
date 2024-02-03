@@ -1,4 +1,6 @@
-use crate::controler::connection::{ConnectionUrls, Token, TokenBeneficiary, TokenBeneficiaryId, TokenSearch};
+use crate::controler::connection::{
+    ConnectionUrls, Token, TokenBeneficiary, TokenBeneficiaryId, TokenSearch,
+};
 use crate::model::beneficiaries::beneficiary::{Beneficiaries, Beneficiary};
 use crate::model::beneficiaries::details::Detail;
 use bincode::{config, decode_from_slice};
@@ -38,7 +40,9 @@ impl Beneficiaries {
         .await?;
         Ok(decoded)
     }
-    pub(crate) async fn search(token_search: TokenSearch) -> Result<Vec<Beneficiary>, anyhow::Error> {
+    pub(crate) async fn search(
+        token_search: TokenSearch,
+    ) -> Result<Vec<Beneficiary>, anyhow::Error> {
         info!("Search beneficiary");
         let bene = reqwest::Client::new()
             .post(ConnectionUrls::SearchBeneficiary.to_string())
@@ -59,7 +63,7 @@ impl Beneficiaries {
     }
 }
 impl Beneficiary {
-    pub(crate) async fn create_new(token: Token) -> Result<Self, anyhow::Error> {
+    pub(crate) async fn create(token: Token) -> Result<Self, anyhow::Error> {
         info!("Create new beneficiary");
         let bene = reqwest::Client::new()
             .post(ConnectionUrls::CreateBeneficiary.to_string())
@@ -77,6 +81,7 @@ impl Beneficiary {
         let config = config::standard();
         let (decoded, _len): (Beneficiary, usize) =
             decode_from_slice(&bene.bytes().await?, config)?;
+        println!("{:?}", decoded);
         Ok(decoded)
     }
 
@@ -125,6 +130,4 @@ impl Beneficiary {
             decode_from_slice(&bene.bytes().await?, config)?;
         Ok(decoded)
     }
-    
-
 }

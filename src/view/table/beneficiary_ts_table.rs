@@ -16,7 +16,7 @@ pub fn TsTable(cx: Scope) -> Element {
         input{
             class: "search-input",
             r#type: "text",
-            placeholder: "Search",
+            placeholder: "Rechercher...",
             class: "search-input",
             oninput: move |event| {
                 use_search.set(event.value.to_lowercase().clone());
@@ -47,13 +47,13 @@ pub fn TsTable(cx: Scope) -> Element {
                                 id,
                             });
                         },
-                        key: "{&beneficiary.Id}",
-                        td{"{&beneficiary.get_full_name()"},
-                        td{"{&beneficiary.get_birth()}"},
-                        td{"{&beneficiary.Adult}"},
-                        td{"{&beneficiary.Kid}"},
-                        td{"{&beneficiary.Phone" },
-                        td{"{&beneficiary.HasGeneralNote}"},
+                        key: "{beneficiary.Id}",
+                        td{"{beneficiary.get_full_name()}"},
+                        td{"{beneficiary.get_birth()}"},
+                        td{"{beneficiary.Adult}"},
+                        td{"{beneficiary.Kid}"},
+                        td{ "{beneficiary.get_phone()}" },
+                        td{"{beneficiary.has_general_note()}"},
                     }
                 },
             },

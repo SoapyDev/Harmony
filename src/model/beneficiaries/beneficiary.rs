@@ -96,8 +96,8 @@ pub struct Beneficiary {
     pub(crate) Id: i32,
     pub(crate) FirstName: String,
     pub(crate) LastName: String,
-    pub(crate) Phone: String,
     pub(crate) Email: String,
+    pub(crate) Phone: String,
     pub(crate) Address: String,
     pub(crate) PostalCode: String,
     pub(crate) Kid: u8,
@@ -126,12 +126,12 @@ impl Beneficiary {
     pub fn new(cx: Scope, user: UseSharedState<User>) -> Self {
         let token = Token::from(user);
         let future = use_future(cx, (), |_| async move {
-            Self::create_new(token)
+            Self::create(token)
                 .await
                 .map_err(|e| error!("Failed to create a beneficiary : {}", e))
                 .unwrap_or(Self::default())
         });
-        future.value().unwrap().clone()
+        future.value().unwrap().to_owned()
     }
     pub async fn update(&self, user: UseSharedState<User>) -> bool {
         let token_bene = TokenBeneficiary::new(Token::from(user), self.clone());
@@ -149,8 +149,17 @@ impl Beneficiary {
     }
 
     pub fn set_phone(&mut self) {
+        let phone_number = Self::format_phone(self.Phone.clone());
+        self.Phone = phone_number;
+    }
+
+    pub fn format_phone(phone: String) -> String {
+        let validator = regex::Regex::new(r"^(\d{3}) \d{3}-\d{4}$").unwrap();
+        if validator.is_match(&phone) {
+            return phone;
+        }
+
         let mut result = String::new();
-        let phone = self.Phone.clone();
         for c in phone.chars() {
             if c.is_numeric() {
                 result.push(c);
@@ -172,7 +181,13 @@ impl Beneficiary {
             }
             phone_number.push(*c);
         }
-        self.Phone = phone_number;
+
+        result
+    }
+
+    pub fn get_phone(&self) -> String {
+        let phone = self.Phone.clone();
+        Self::format_phone(phone)
     }
 
     pub fn get_full_name(&self) -> String {

@@ -30,19 +30,21 @@ pub fn BeneficiariesTable<'a>(cx: Scope<'a, TableClickEvent<'a>>) -> Element<'a>
 
     let details = use_future(cx, use_id, |id| {
         let beneficiary = cx.props.use_beneficiary.clone();
+        let use_beneficiaries = use_beneficiaries.clone();
         let user = user.clone();
         let details = cx.props.use_details.clone();
         async move {
             let (bene, detail) = Beneficiary::get_beneficiary(user, *id.get()).await;
             beneficiary.set(bene.clone());
             details.set(detail.clone());
+            use_beneficiaries.with_mut(|benes| benes.update(&bene))
         }
     });
     render! {
         input{
             class: "search-input",
             r#type: "text",
-            placeholder: "Search",
+            placeholder: "Rechercher...",
             class: "search-input",
             oninput: move |event| {
                 use_search.set(event.value.to_lowercase().clone());

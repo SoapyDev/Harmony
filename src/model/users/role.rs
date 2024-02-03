@@ -35,3 +35,13 @@ impl FromStr for Role {
         }
     }
 }
+
+impl Role {
+    pub fn get_labels() -> Vec<String> {
+        vec![
+            "Utilisateur".to_string(),
+            "Administrateur".to_string(),
+            "Travailleur social".to_string(),
+        ]
+    }
+}

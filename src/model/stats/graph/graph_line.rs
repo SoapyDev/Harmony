@@ -2,29 +2,29 @@ use crate::model::stats::graph::graph_builder::GraphBuilder;
 use plotters::backend::SVGBackend;
 use plotters::chart::{ChartBuilder, LabelAreaPosition, SeriesLabelPosition};
 use plotters::element::PathElement;
-use plotters::prelude::{AsRelative, IntoDrawingArea, IntoFont, LineSeries, Palette, WHITE};
-use plotters::style::{Color, Palette100, BLACK};
+use plotters::prelude::{AsRelative, IntoDrawingArea, IntoFont, LineSeries, WHITE};
+use plotters::style::{Color, BLACK};
 use std::error::Error;
 
 pub fn create_line(builder: &GraphBuilder) -> Result<(), Box<dyn Error>> {
+    let (data, dates) = builder.filter();
     let (from, to) = builder.duration.get_dates();
-    let max = (builder.get_max_value() * 1.7) as u32;
+    let max = (builder.get_max_value() * (1.0 + 0.1 * data.len() as f64)) as u32;
     let labels = builder.get_labels();
     let path = builder.get_path();
+    let colors = builder.get_colors();
 
     let root_area = SVGBackend::new(&path, (builder.width, builder.height)).into_drawing_area();
     root_area.fill(&WHITE)?;
-
     let mut chart = ChartBuilder::on(&root_area)
         .caption(builder.get_title(), ("Inter", 28.0).into_font())
         .margin(10)
         .set_label_area_size(LabelAreaPosition::Left, 10.percent())
         .set_label_area_size(LabelAreaPosition::Right, 10.percent())
         .build_cartesian_2d(from..to, 0..max)?;
-
     chart
         .configure_mesh()
-        .x_labels(12)
+        .x_labels(10)
         .y_labels(10)
         .x_label_style(("Inter", 14).into_font())
         .y_label_style(("Inter", 14).into_font())
@@ -33,21 +33,20 @@ pub fn create_line(builder: &GraphBuilder) -> Result<(), Box<dyn Error>> {
         .y_max_light_lines(1)
         .draw()?;
 
-    let (data, dates) = builder.filter();
-
     for (i, values) in data.iter().enumerate() {
-        let color = Palette100::pick(i);
+        let color = colors[i];
         let label = labels.get(i % labels.len());
         let label = label.unwrap().as_str();
         chart
             .draw_series(LineSeries::new(
                 values
                     .iter()
-                    .map(|x| (*dates.get(i).expect("Could not get date"), *x)),
+                    .enumerate()
+                    .map(|(j, x)| (*dates.get(j).expect("Could not get date"), *x)),
                 &color,
             ))?
             .label(label)
-            .legend(move |(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &color));
+            .legend(move |(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], color));
     }
 
     chart

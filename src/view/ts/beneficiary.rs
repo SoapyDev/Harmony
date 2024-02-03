@@ -12,7 +12,9 @@ use crate::model::users::user::User;
 use crate::view::inputs::calendar::{get_weeks, CalendarInputMut, Day};
 use crate::view::inputs::dates::DateMut;
 use crate::view::inputs::numbers::NumberInputMut;
-use crate::view::inputs::selectables::{get_selected_months, get_selected_years, SelectInputMut};
+use crate::view::inputs::selectables::{
+    get_selected_months, get_selected_years, AllergiesInputMut, SelectInputMut,
+};
 use crate::view::inputs::switches::SwitchInputMut;
 use crate::view::inputs::textareas::TextAreaMut;
 use crate::view::inputs::texts::TextInputMut;
@@ -35,7 +37,21 @@ pub fn BeneficiaryPage(cx: Scoped, id: i32) -> Element {
     let use_month = use_state(cx, || Local::now().month());
     let use_year = use_state(cx, || Local::now().year());
     let use_day = use_state(cx, || Local::now().day());
-    let use_details = use_ref(cx, || Detail::default());
+    let use_details = use_ref(cx, Detail::default);
+
+    let _details = use_future(cx, (), |_| {
+        let id = *id;
+        let beneficiary = beneficiary.clone();
+        let use_beneficiaries = beneficiaries.clone();
+        let user = user.clone();
+        let details = use_details.clone();
+        async move {
+            let (bene, detail) = Beneficiary::get_beneficiary(user, id).await;
+            beneficiary.set(bene.clone());
+            details.set(detail.clone());
+            use_beneficiaries.with_mut(|benes| benes.update(&bene))
+        }
+    });
 
     let update_beneficiary = use_future(cx, (), |_| {
         let use_beneficiary = beneficiary.read().clone();
@@ -62,9 +78,9 @@ pub fn BeneficiaryPage(cx: Scoped, id: i32) -> Element {
                 BeneficiaryId: use_beneficiary.read().Id,
                 Date: date.clone(),
             };
-            if Detail::push(user, &use_details, presence.clone()).await {
+            if Detail::push_presence(user, &use_details, presence.clone()).await {
                 use_details.with_mut(|val| val.presences.push(presence));
-                use_beneficiary.with_mut(|val| { val.set_last_presence(date) });
+                use_beneficiary.with_mut(|val| val.set_last_presence(date));
                 use_beneficiaries.with_mut(|val| val.update(&use_beneficiary.read()));
             }
         }
@@ -85,9 +101,9 @@ pub fn BeneficiaryPage(cx: Scoped, id: i32) -> Element {
                 Date: date.clone(),
             };
 
-            if Detail::pop(user, &use_details, presence).await {
+            if Detail::pop_presence(user, &use_details, presence).await {
                 use_details.with_mut(|val| val.presences.retain(|p| p.Date != date));
-                use_beneficiary.with_mut(|val| { val.set_last_presence(date) });
+                use_beneficiary.with_mut(|val| val.set_last_presence(date));
                 use_beneficiaries.with_mut(|val| val.update(&use_beneficiary.read()));
             }
         }
@@ -101,7 +117,7 @@ pub fn BeneficiaryPage(cx: Scoped, id: i32) -> Element {
                 onclick: move |_| {
                     navigator.go_back();
                 },
-                img{src: "../../assets/icon/return.svg"}
+                img{src: "./src/assets/icon/return.svg"}
             }
         }
         div{
@@ -206,24 +222,12 @@ pub fn BeneficiaryPage(cx: Scoped, id: i32) -> Element {
                         label: "Téléphone",
                         class: "phone"
                     },
-                }
-                div{
-                    class:"row",
                     div{
-                        class: "col",
-                        label{ "Allergies" },
-                        div{
-                            class: "select multiple",
-                            select{
-                                multiple: true,
-                                for allergy in use_details.read().allergies.clone(){
-                                    option{
-                                        key:"{allergy}",
-                                        "{allergy}",
-                                    }
-                                }
-                            }
-                        }
+                        class: "form-group allergies",
+                        AllergiesInputMut{
+                            beneficiary_id: beneficiary.read().Id,
+                            details: use_details,
+                        },
                     },
                     div{
                        class: "form-group calendar",
@@ -286,7 +290,7 @@ pub fn BeneficiaryPage(cx: Scoped, id: i32) -> Element {
                         on_change: move |_: FormEvent| {update_beneficiary.restart()},
                         value: beneficiary.read().Address.to_string(),
                         class: "input",
-                        label: "Address",
+                        label: "Adresse",
                     },
                     SelectInputMut{
                         on_change: move |evt: FormEvent| {
@@ -305,7 +309,7 @@ pub fn BeneficiaryPage(cx: Scoped, id: i32) -> Element {
                         on_change: move |_: FormEvent|{update_beneficiary.restart()},
                         value: beneficiary.read().PostalCode.to_string(),
                         class: "input",
-                        label: "Code Postal",
+                        label: "Code postal",
                     },
                 }
                  div{
@@ -354,7 +358,7 @@ pub fn BeneficiaryPage(cx: Scoped, id: i32) -> Element {
                         values: FamilySituations::get_selectable_values(),
                         list: FamilySituations::get_labels(),
                         class: "select",
-                        label: "Situation familliale",
+                        label: "Situation familiale",
                         is_multiple: false ,
                     },
                     div{
@@ -381,21 +385,11 @@ pub fn BeneficiaryPage(cx: Scoped, id: i32) -> Element {
                         label: "Situation",
                         class: "full-width",
                     }
-                }
-                div{
-                    class: "row",
-                    TextAreaMut{
-                        on_input: move |evt: FormEvent| beneficiary.with_mut(|val| val.AdminNote = evt.value.to_string()),
-                        on_change: move |_: FormEvent| {update_beneficiary.restart()},
-                        value: beneficiary.read().AdminNote.to_string(),
-                        label: "Note à l'administration",
-                        class: "",
-                    }
                     TextAreaMut{
                         on_input: move |evt: FormEvent| beneficiary.with_mut(|val| val.TsNote = evt.value.to_string()),
                         on_change: move |_: FormEvent| {update_beneficiary.restart()},
                         value: beneficiary.read().TsNote.to_string(),
-                        label: "Note privée",
+                        label: "Notes",
                         class: "span-2",
                     }
                 }

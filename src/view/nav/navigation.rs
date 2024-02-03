@@ -53,15 +53,12 @@ fn render_admin_nav<'a>(cx: Scope<'a>, user: &UseSharedState<User>) -> Element<'
             div{
             }
             ul {
-                li { Link { active_class:"active", to: Route::Home {}, "Beneficiaires" } }
+                li { Link { active_class:"active", to: Route::Home {}, "Bénéficiaires" } }
                 li { Link { active_class:"active", to: Route::StatsPage {},"Statistiques" } }
                 li { Link { active_class:"active", to: Route::Users {},"Utilisateurs" } }
             },
 
             div{
-                button {
-                    img{ src: "./src/assets/icon/notifications.svg"},
-                }
                 button {
                     onclick: move |_| {
                         if export(cx).is_err(){

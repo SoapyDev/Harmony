@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 
 use crate::controler::connection::ConnectionUrls;
-use crate::model::beneficiaries::details::{Detail, Presence};
+use crate::model::beneficiaries::details::{Allergy, Detail, Presence};
 use log::error;
 use serde::Serialize;
 
@@ -10,6 +10,16 @@ pub(crate) struct TokenPresence {
     pub(crate) Token: String,
     pub(crate) Presence: Presence,
 }
+
+
+
+#[derive(Clone, Serialize)]
+pub(crate) struct TokenAllergy {
+    pub(crate) Token: String,
+    pub(crate) Allergy: Allergy,
+}
+
+
 impl Detail {
     pub(crate) async fn insert_presence(
         token_presence: TokenPresence,
@@ -37,6 +47,40 @@ impl Detail {
             _ => {
                 error!("Failed to delete presence : {:?}", res.text().await?);
                 Err(anyhow::Error::msg("Failed to delete presence"))
+            }
+        }
+    }
+    
+    pub(crate) async fn insert_allergy(
+        token_allergy: TokenAllergy
+    ) -> Result<(), anyhow::Error>{
+        let res = reqwest::Client::new()
+            .post(ConnectionUrls::InsertAllergy.to_string())
+            .json(&token_allergy)
+            .send()
+            .await?;
+        match res.status() {
+            reqwest::StatusCode::OK => Ok(()),
+            _ => {
+                error!("Failed to insert allergy : {:?}", res.text().await?);
+                Err(anyhow::Error::msg("Failed to insert allergy"))
+            }
+        }
+    }
+    
+    pub(crate) async fn delete_allergy(
+        token_allergy: TokenAllergy
+    ) -> Result<(), anyhow::Error>{
+        let res = reqwest::Client::new()
+            .post(ConnectionUrls::DeleteAllergy.to_string())
+            .json(&token_allergy)
+            .send()
+            .await?;
+        match res.status() {
+            reqwest::StatusCode::OK => Ok(()),
+            _ => {
+                error!("Failed to delete allergy : {:?}", res.text().await?);
+                Err(anyhow::Error::msg("Failed to delete allergy"))
             }
         }
     }
