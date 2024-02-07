@@ -28,7 +28,7 @@ impl Detail {
         user: UseSharedState<User>,
     ) -> Result<(), anyhow::Error> {
         let token = TokenAllergy {
-            Token: user.read().session.clone(),
+            Token: user.read().Token.clone(),
             Allergy: Allergy {
                 BeneficiaryId: id,
                 Allergy: allergy.to_string(),
@@ -43,7 +43,7 @@ impl Detail {
         user: UseSharedState<User>,
     ) -> Result<(), anyhow::Error> {
         let token = TokenAllergy {
-            Token: user.read().session.clone(),
+            Token: user.read().Token.clone(),
             Allergy: Allergy {
                 BeneficiaryId: id,
                 Allergy: allergy.to_string(),
@@ -66,7 +66,7 @@ impl Detail {
             return false;
         }
         let token_presence = TokenPresence {
-            Token: user.read().session.clone(),
+            Token: user.read().Token.clone(),
             Presence: presence,
         };
         if Self::insert_presence(token_presence).await.is_ok() {
@@ -90,7 +90,7 @@ impl Detail {
         }
 
         let token_presence = TokenPresence {
-            Token: user.read().session.clone(),
+            Token: user.read().Token.clone(),
             Presence: presence,
         };
 

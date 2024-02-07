@@ -15,8 +15,10 @@ use crate::view::inputs::switches::SwitchInputMut;
 use crate::view::inputs::textareas::TextAreaMut;
 use crate::view::inputs::texts::TextInputMut;
 use crate::view::table::beneficiary_table::BeneficiariesTable;
-use chrono::{Datelike, Local, NaiveDate};
+use chrono::{Datelike, Local};
 use dioxus::prelude::*;
+use crate::model::stats::stats::Stats;
+
 #[component]
 pub fn Home(cx: Scope) -> Element {
     let user = use_shared_state::<User>(cx).unwrap();
@@ -27,63 +29,7 @@ pub fn Home(cx: Scope) -> Element {
     let use_year = use_state(cx, || Local::now().year());
     let use_day = use_state(cx, || Local::now().day());
 
-    let update_beneficiary = use_future(cx, (), |_| {
-        let use_beneficiary = use_beneficiary.read().clone();
-        let user = user.clone();
-        let use_beneficiaries = use_beneficiaries.clone();
-        async move {
-            if use_beneficiary.update(user).await {
-                use_beneficiaries.with_mut(|val| val.update(&use_beneficiary));
-            }
-        }
-    });
-
-    let add_date = use_future(cx, (), |_| {
-        let user = user.clone();
-        let use_detail = use_detail.clone();
-        let month = use_month.clone();
-        let year = use_year.clone();
-        let day = use_day.clone();
-        let use_beneficiary = use_beneficiary.clone();
-        let use_beneficiaries = use_beneficiaries.clone();
-        async move {
-            let date = NaiveDate::from_ymd_opt(*year.get(), *month.get(), *day).unwrap();
-            let date = date.format("%Y-%m-%d").to_string();
-            let presence = Presence {
-                BeneficiaryId: use_beneficiary.read().Id,
-                Date: date.clone(),
-            };
-            if Detail::push_presence(user, &use_detail, presence.clone()).await {
-                use_detail.with_mut(|val| val.presences.push(presence));
-                use_beneficiary.with_mut(|val| val.set_last_presence(date));
-                use_beneficiaries.with_mut(|val| val.update(&use_beneficiary.read()));
-            }
-        }
-    });
-
-    let remove_date = use_future(cx, (), |_| {
-        let user = user.clone();
-        let use_detail = use_detail.clone();
-        let month = use_month.clone();
-        let year = use_year.clone();
-        let day = use_day.clone();
-        let use_beneficiary = use_beneficiary.clone();
-        let use_beneficiaries = use_beneficiaries.clone();
-        async move {
-            let date = NaiveDate::from_ymd_opt(*year.get(), *month.get(), *day).unwrap();
-            let date = date.format("%Y-%m-%d").to_string();
-            let presence = Presence {
-                BeneficiaryId: use_beneficiary.read().Id,
-                Date: date.clone(),
-            };
-
-            if Detail::pop_presence(user, &use_detail, presence).await {
-                use_detail.with_mut(|val| val.presences.retain(|p| p.Date != date));
-                use_beneficiary.with_mut(|val| val.set_last_presence(date));
-                use_beneficiaries.with_mut(|val| val.update(&use_beneficiary.read()));
-            }
-        }
-    });
+    load_stats(cx, user, use_shared_state::<Stats>(cx).unwrap());
 
     render! {
         div {
@@ -104,14 +50,14 @@ pub fn Home(cx: Scope) -> Element {
                             class: "row",
                             TextInputMut{
                                 on_input: move |evt: FormEvent| use_beneficiary.with_mut(move |val| val.FirstName = evt.value.to_string()),
-                                on_change: move |_ : FormEvent| {update_beneficiary.restart()},
+                                on_change: move |_ : FormEvent| {update_beneficiary(cx, use_beneficiary, user, use_beneficiaries)},
                                 value:  use_beneficiary.read().FirstName.to_string(),
                                 label: "Prénom",
                                 class: "",
                             },
                             TextInputMut{
                                 on_input: move |evt: FormEvent| use_beneficiary.with_mut(move |val| val.LastName = evt.value.to_string()),
-                                on_change: move |_ : FormEvent| {update_beneficiary.restart()},
+                                on_change: move |_ : FormEvent| {update_beneficiary(cx, use_beneficiary, user, use_beneficiaries)},
                                 value: use_beneficiary.read().LastName.to_string(),
                                 label: "Nom",
                                 class: "lastname"
@@ -122,7 +68,7 @@ pub fn Home(cx: Scope) -> Element {
                             DateMut{
                                     on_change: move |event : FormEvent| {
                                         use_beneficiary.with_mut(move |val| val.set_birth(&event.value));
-                                        update_beneficiary.restart()
+                                        update_beneficiary(cx, use_beneficiary, user, use_beneficiaries)
                                     },
                                     value: use_beneficiary.read().get_birth(),
                                     label: "Date de naissance",
@@ -131,7 +77,7 @@ pub fn Home(cx: Scope) -> Element {
                             SelectInputMut{
                                 on_change: move |evt: FormEvent| {
                                     use_beneficiary.with_mut(move |val| val.Language = evt.value.to_string());
-                                    update_beneficiary.restart()
+                                    update_beneficiary(cx, use_beneficiary, user, use_beneficiaries)
                                 },
                                 value: use_beneficiary.read().Language.to_string(),
                                 values: Languages::get_selectable_values(),
@@ -146,7 +92,7 @@ pub fn Home(cx: Scope) -> Element {
                                 SelectInputMut{
                                     on_change: move |evt: FormEvent| {
                                         use_beneficiary.with_mut(move |val| val.Sexe = evt.value.to_string());
-                                        update_beneficiary.restart()
+                                        update_beneficiary(cx, use_beneficiary, user, use_beneficiaries)
                                     },
                                     value: use_beneficiary.read().Sexe.to_string(),
                                     values: Sexes::get_selectable_values(),
@@ -158,7 +104,7 @@ pub fn Home(cx: Scope) -> Element {
                                 SelectInputMut{
                                     on_change: move |evt: FormEvent| {
                                         use_beneficiary.with_mut(|val| val.Origin = evt.value.to_string());
-                                        update_beneficiary.restart()
+                                        update_beneficiary(cx, use_beneficiary, user, use_beneficiaries)
                                     },
                                     value: use_beneficiary.read().Origin.to_string(),
                                     values: Origins::get_selectable_values(),
@@ -175,7 +121,7 @@ pub fn Home(cx: Scope) -> Element {
                                 NumberInputMut{
                                     on_change: move |evt : FormEvent| {
                                         use_beneficiary.with_mut(move|val| val.Adult = evt.value.parse::<u8>().unwrap_or_default());
-                                        update_beneficiary.restart()
+                                        update_beneficiary(cx, use_beneficiary, user, use_beneficiaries)
                                     },
                                     value:use_beneficiary.read().Adult.to_string(),
                                     label: "Adultes",
@@ -186,7 +132,7 @@ pub fn Home(cx: Scope) -> Element {
                                 NumberInputMut{
                                     on_change: move |evt: FormEvent|{
                                         use_beneficiary.with_mut(move|val| val.Kid = evt.value.parse::<u8>().unwrap_or_default());
-                                        update_beneficiary.restart()
+                                        update_beneficiary(cx, use_beneficiary, user, use_beneficiaries)
                                     },
                                     value: use_beneficiary.read().Kid.to_string(),
                                     label: "Enfants",
@@ -201,7 +147,7 @@ pub fn Home(cx: Scope) -> Element {
                                     on_input: move |evt: FormEvent| use_beneficiary.with_mut(|val| val.Phone = evt.value.to_string()),
                                     on_change: move |_| {
                                         use_beneficiary.with_mut(|val| val.set_phone());
-                                        update_beneficiary.restart()
+                                        update_beneficiary(cx, use_beneficiary, user, use_beneficiaries)
                                     },
                                     value: use_beneficiary.read().Phone.to_string(),
                                     label: "Téléphone",
@@ -210,7 +156,7 @@ pub fn Home(cx: Scope) -> Element {
                                 SwitchInputMut{
                                     on_change: move |evt: FormEvent| {
                                         use_beneficiary.with_mut(move |val| { val.IsActive = evt.value.parse::<bool>().unwrap_or_default()});
-                                        update_beneficiary.restart()
+                                        update_beneficiary(cx, use_beneficiary, user, use_beneficiaries)
                                     },
                                     value: use_beneficiary.read().IsActive,
                                     label: "Actif"
@@ -238,11 +184,11 @@ pub fn Home(cx: Scope) -> Element {
                             CalendarInputMut{
                                 on_click: move |val : &Day| {
                                     use_day.set(val.day);
-                                    add_date.restart();
+                                    add_date(cx, user, use_beneficiary, use_beneficiaries, use_month, use_year, use_day, use_detail);
                                 },
                                 on_dbclick: move |val: &Day| {
                                     use_day.set(val.day);
-                                    remove_date.restart();
+                                    remove_date(cx, user, use_beneficiary, use_beneficiaries, use_month, use_year, use_day, use_detail);
                                 },
                                 month: get_weeks(*use_year.get(), *use_month.get(), &use_detail.read().presences),
                                 current_month: *use_month.get(),
@@ -255,7 +201,7 @@ pub fn Home(cx: Scope) -> Element {
                         class: "form-group notes",
                         TextAreaMut{
                             on_input: move |evt: FormEvent| use_beneficiary.with_mut(|val| val.set_general_note(&evt.value)),
-                            on_change: move |_: FormEvent|{update_beneficiary.restart()},
+                            on_change: move |_: FormEvent|{update_beneficiary(cx, use_beneficiary, user, use_beneficiaries)},
                             value: use_beneficiary.read().GeneralNote.to_string(),
                             label: "Notes",
                             class: "",
@@ -267,4 +213,69 @@ pub fn Home(cx: Scope) -> Element {
 
         }
     }
+}
+fn update_beneficiary(cx : Scope, beneficiary: &UseRef<Beneficiary>, user: &UseSharedState<User>, beneficiaries: &UseSharedState<Beneficiaries>) {
+    use_future(cx, user, |user| {
+        let beneficiary = beneficiary.clone();
+        let beneficiaries = beneficiaries.clone();
+        async move {
+            let bene = beneficiary.read().clone();
+            if bene.update(user).await {
+                beneficiaries.with_mut(|val| val.update(&beneficiary.read()));
+            }
+        }
+    });
+}
+
+
+fn add_date(cx: Scope, user: &UseSharedState<User>, beneficiary: &UseRef<Beneficiary>, beneficiaries: &UseSharedState<Beneficiaries>, use_month: &UseState<u32>, use_year: &UseState<i32>, use_day: &UseState<u32>, use_details: &UseRef<Detail>){
+    use_future(cx, user, |user|
+        {
+            let date = format!("{}-{}-{}", use_year.get(), use_month.get(), use_day.get());
+            let presence = Presence {
+                BeneficiaryId: beneficiary.read().Id,
+                Date: date.clone(),
+            };
+            let details = use_details.clone();
+            let beneficiary = beneficiary.clone();
+            let beneficiaries = beneficiaries.clone();
+
+            async move {
+                if Detail::push_presence(user, &details, presence.clone()).await {
+                    details.with_mut(|val| val.presences.push(presence));
+                    beneficiary.with_mut(|val| val.set_last_presence(date));
+                    beneficiaries.with_mut(|val| val.update(&beneficiary.read()));
+                }
+            }
+        });
+}
+fn remove_date(cx: Scope, user: &UseSharedState<User>, beneficiary: &UseRef<Beneficiary>, beneficiaries: &UseSharedState<Beneficiaries>, use_month: &UseState<u32>, use_year: &UseState<i32>, use_day: &UseState<u32>, use_details: &UseRef<Detail>){
+    use_future(cx, user, |user| {
+        let date = format!("{}-{}-{}", use_year.get(), use_month.get(), use_day);
+        let presence = Presence {
+            BeneficiaryId: beneficiary.read().Id,
+            Date: date.clone(),
+        };
+        let details = use_details.clone();
+        let beneficiary = beneficiary.clone();
+        let beneficiaries = beneficiaries.clone();
+        async move {
+            if Detail::pop_presence(user, &details, presence).await {
+                details.with_mut(|val| val.presences.retain(|p| p.Date != date));
+                beneficiary.with_mut(|val| val.set_last_presence(date));
+                beneficiaries.with_mut(|val| val.update(&beneficiary.read()));
+            }
+        }
+    });
+}
+fn load_stats(cx: Scope, user: &UseSharedState<User>, stats: &UseSharedState<Stats>) {
+    use_future(cx, user, |user| {
+        let stats = stats.clone();
+        async move {
+            if stats.read().is_empty() {
+                let res = Stats::fetch(user).await;
+                stats.with_mut(|stats| *stats = res);
+            }
+        }
+    });
 }

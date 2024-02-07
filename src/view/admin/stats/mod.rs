@@ -172,13 +172,15 @@ fn Graph<'a>(
     graph_values: &'a UseRef<GraphValues>,
     dates: &'a UseRef<DateRange>,
 ) -> Element {
-    let builder = GraphBuilder::new(
+    let mut builder = GraphBuilder::new(
         graph_values.read().data.clone(),
         graph_values.read().graph,
         *dates.read(),
         graph_values.read().filter,
     );
-
+    builder.draw().expect("Error while drawing graph");
+    let path = builder.get_path();
+    let path = path.to_str().unwrap();
     render! {
         div{
             class: "img-inputs",
@@ -189,7 +191,7 @@ fn Graph<'a>(
                 list: GraphType::get_labels(),
                 is_multiple: false,
                 label: "Graphique",
-                class: "graph-inputselect",
+                class: "graph-input select",
             }
             SelectInputMut{
                 on_change: |e: FormEvent| graph_values.with_mut(|val| val.graph = GraphType::from_str(&val.graph.as_string(), &ColorPalette::from_str(&e.value).unwrap_or(ColorPalette::AuxSources))),
@@ -221,7 +223,7 @@ fn Graph<'a>(
         }
 
         img{
-            src: "{builder.get_path().to_str().unwrap()}",
+            src: "{path}",
             width: "{builder.width}",
             height: "{builder.height}",
         }

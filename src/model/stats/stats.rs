@@ -72,7 +72,7 @@ impl Stats {
     }
 
     pub(crate) async fn fetch(user: UseSharedState<User>) -> Stats {
-        let token = Token::new(user.read().session.clone());
+        let token = Token::new(user.read().Token.clone());
         Self::get_stats(token).await.unwrap_or(Stats::new())
     }
 

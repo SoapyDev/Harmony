@@ -8,202 +8,175 @@ use dioxus::prelude::*;
 pub fn Users(cx: Scope) -> Element {
     let user = use_shared_state::<User>(cx).unwrap();
     let users: &UseRef<Vec<UserRole>> = use_ref(cx, Vec::new);
-    let users_loaded = use_state(cx, || false);
+    let is_to_update = use_state(cx, || false);
+    let current_id = use_state(cx, || 0);
+    let current_user = use_ref(cx, UserRole::new);
 
-    let _ = use_future(cx, (), |_| {
-        let user = user.clone();
+    let get_user = use_future(cx, user, |user| {
         let users = users.clone();
-        let users_loaded = users_loaded.clone();
         async move {
-            let user_list = UserRole::get_all(user).await;
-            users.with_mut(|u| *u = user_list);
-            users_loaded.set(true);
+            let res = UserRole::get_all(user).await;
+            users.with_mut(|u| *u = res);
         }
     });
+
+    let _ = use_future(cx, current_id, |current| {
+        let users = users.clone();
+        let current_user = current_user.clone();
+        async move {
+            if *current.get() == 0 {
+                current_user.set(UserRole::new());
+                return;
+            }
+           let user = users.read().iter().find(|u| u.Id == *current.get()).unwrap().clone();
+            current_user.set(user);
+        }
+    });
+
+    let update_user = use_future(cx, (user, is_to_update), |(user, is_to_update)| {
+        let users = users.clone();
+        let current = current_user.read().clone();
+        async move {
+            if !*is_to_update {
+                return;
+            }
+
+            UserRole::update(user.clone(), current).await;
+            let refresh = UserRole::get_all(user).await;
+            users.with_mut(|u| *u = refresh);
+            is_to_update.set(false);
+        }
+    });
+
+    let reader = users.read().clone();
 
     render! {
         style{
             include_str!("../../../assets/style/users.css"),
-        }
+        },
         div{
-            class: "create-button-container",
-            CreateButton{
-                users: users.clone(),
+            class: "users",
+            h1{
+                "Utilisateurs"
             },
-        }
-        if *users_loaded.get(){
-            render!{
-                div{
-                    class: "users-container",
-                    for u in users.read().iter() {
-                        div{
-                            key: "{u.Id}",
-                            class: "user-row",
-                            UsernameInput{
+            table{
+                thead {
+                    tr{
+                        th{
+                            class: "col text-inputs",
+                            "Nom d'utilisateur",
+                            input{
+                                oninput: move |event| {
+                                    current_user.with_mut(|u| u.Username = event.value.clone());
+                                },
+                                onchange: move |_| {
+                                    is_to_update.set(true);
+                                },
+                                r#type: "text",
+                                value: "{current_user.read().Username}",
+                                placeholder: "Nom d'utilisateur",
+                            }
+                        },
+                        th{
+                            class: "col text-inputs",
+                            "Mot de passe",
+                            input{
+                                oninput: move |event| {
+                                    current_user.with_mut(|u| u.Password = event.value.clone());
+                                },
+                                onchange: move |_| {
+                                    is_to_update.set(true);
+                                },
+                                r#type: "password",
+                                placeholder: "************",
+                                value: "{current_user.read().Password}",
+                            }
+                        },
+                        th{
+                            class: "col text-inputs",
+                            "Rôle",
+                            select{
+                                onchange: move |event| {
+                                    current_user.with_mut(|u| u.Role = event.value.clone());
+                                    is_to_update.set(true);
+                                },
+                                class: "select",
+                                value: "{current_user.read().Role}",
+                                option{
+                                    value: "User",
+                                    "Utilisateur"
+                                },
+                                option{
+                                    value: "Admin",
+                                    "Administrateur"
+                                },
+                                option {
+                                    value: "TS",
+                                    "Travailleur Social"
+                                },
+                            }
+                        },
+                        th{
+                            CreateButton {
                                 users: users.clone(),
-                                user_role: u.clone(),
-                            },
-                            PasswordInput{
-                                users: users.clone(),
-                                user_role: u.clone(),
-                            },
-                            RoleInput{
-                                users: users.clone(),
-                                user_role: u.clone(),
-                            },
-                            DeleteButton{
-                                users: users.clone(),
-                                id: u.Id,
-                            },
+                                id: current_id.clone(),
+                            }
                         }
-                    },
+                    }
+                },
+                tbody {
+                    for element in reader{
+                        tr{
+                            key: "{element.Id}",
+                            onclick: move |_| {
+                                current_id.set(element.Id);
+                            },
+                            td{
+                                "{element.Username}"
+                            },
+                            td{
+                                "*******************"
+                            },
+                            td{
+                                "{element.Role}"
+                            },
+                            td{
+                                DeleteButton {
+                                    id: element.Id,
+                                    users: users.clone(),
+                                    current_id: current_id.clone(),
+                                }
+                            }
+                        }
+                    }
                 }
             }
-        },
-    }
-}
-
-#[component]
-fn UsernameInput(cx: Scope, users: UseRef<Vec<UserRole>>, user_role: UserRole) -> Element {
-    let user = use_shared_state::<User>(cx).unwrap();
-
-    render! {
-        div{
-            class: "input-container",
-            label{
-                "Nom d'utilisateur"
-            }
-            input{
-                oninput: move |e| {
-                   let value = e.value.clone();
-                    users.with_mut(|u| {
-                        let index = u.iter().position(|u| u.Id == user_role.Id);
-                        if let Some(index) = index {
-                            u[index].Username = value;
-                        }
-                    });
-                },
-                onchange: move |_| {
-                    use_future(cx, (), |_| {
-                        let user = user.clone();
-                        let user_role = user_role.clone();
-                        async move {
-                            UserRole::update(user.clone(), user_role).await;
-                        }
-                    });
-                },
-                r#type: "text",
-                value: "{user_role.Username}",
-                class: "user_input",
-            }
         }
     }
 }
 
-#[component]
-fn PasswordInput(cx: Scope, users: UseRef<Vec<UserRole>>, user_role: UserRole) -> Element {
-    let user = use_shared_state::<User>(cx).unwrap();
 
-    render! {
-        div{
-            class: "input-container",
-            label{
-                "Mot de passe"
-            }
-            input{
-                oninput: move |e| {
-                   let value = e.value.clone();
-                    users.with_mut(|u| {
-                        let index = u.iter().position(|u| u.Id == user_role.Id);
-                        if let Some(index) = index {
-                            u[index].Password = value;
-                        }
-                    });
-                },
-                onchange: move |_| {
-                    use_future(cx, (), |_| {
-                        let user = user.clone();
-                        let user_role = user_role.clone();
-                        async move {
-                            UserRole::update(user, user_role).await;
-                        }
-                    });
-                },
-                r#type: "password",
-                min: 8,
-                max: 50,
-                value: "{user_role.Password}",
-                class: "user_input",
-                placeholder: "**********",
-            }
-        }
-    }
-}
 
 #[component]
-fn RoleInput(cx: Scope, users: UseRef<Vec<UserRole>>, user_role: UserRole) -> Element {
-    let user = use_shared_state::<User>(cx).unwrap();
-
-    render! {
-        div{
-            class: "input-container",
-            label{
-                "Rôle"
-            },
-            select{
-                class: "select",
-                oninput: move |e| {
-                    let value = e.value.clone();
-                    let index = users.read().iter().position(|u| u.Id == user_role.Id);
-
-                    users.with_mut(|u| {
-                        if let Some(index) = index {
-                            u[index].Role = value;
-                            use_future(cx, (), |_| {
-                                let user = user.clone();
-                                let u = u.clone();
-                                async move {
-                                    UserRole::update(user, u[index].clone()).await;
-                                }
-                            });
-                        }
-                    });
-                },
-                value: "{user_role.Role}",
-                class: "user_input",
-                option{
-                    value: "Admin",
-                    "Administrateur"
-                },
-                option{
-                    value: "TS",
-                    "Travailleur social"
-                },
-                option{
-                    value: "User",
-                    "Utilisateur"
-                },
-            },
-        }
-    }
-}
-
-#[component]
-fn CreateButton(cx: Scope, users: UseRef<Vec<UserRole>>) -> Element {
+fn CreateButton(cx: Scope, users: UseRef<Vec<UserRole>>, id : UseState<i32>) -> Element {
     let user = use_shared_state::<User>(cx).unwrap();
     let use_clicked = use_state(cx, || false);
     let create_user = use_future(
         cx,
         (use_clicked, users, user),
-        |(clic, users, user)| async move {
-            if *clic {
-                UserRole::create(user.clone(), users.clone()).await;
-                let refresh = UserRole::get_all(user).await;
-                users.with_mut(|u| *u = refresh);
-                clic.set(false);
-            }
-        },
-    );
+        |(click, users, user)| {
+                let id = id.clone();
+                async move {
+                    if *click {
+                        UserRole::create(user.clone(), users.clone()).await;
+                        let refresh = UserRole::get_all(user).await;
+                        users.with_mut(|u| *u = refresh);
+                        let last = users.read().last().unwrap().Id;
+                        id.set(last);
+                        click.set(false);
+                    }
+                }
+            });
 
     render! {
         button{
@@ -218,16 +191,20 @@ fn CreateButton(cx: Scope, users: UseRef<Vec<UserRole>>) -> Element {
 }
 
 #[component]
-fn DeleteButton(cx: Scope, id: i32, users: UseRef<Vec<UserRole>>) -> Element {
+fn DeleteButton(cx: Scope, id: i32, users: UseRef<Vec<UserRole>>, current_id: UseState<i32>) -> Element {
     let user = use_shared_state::<User>(cx).unwrap();
     let use_clicked = use_state(cx, || false);
     let _ = use_future(cx, use_clicked, |clic| {
+        let current_id = current_id.clone();
         let user = user.clone();
         let users = users.clone();
         let id = *id;
         async move {
             if *clic {
                 UserRole::delete(user, users, id).await;
+                if *current_id.get() == id {
+                    current_id.set(0);
+                }
                 clic.set(false);
             }
         }

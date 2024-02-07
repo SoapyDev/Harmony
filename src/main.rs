@@ -1,10 +1,8 @@
 #![allow(non_snake_case)]
 
-use chrono::Local;
 use dioxus_desktop::WindowCloseBehaviour::LastWindowExitsApp;
 use dioxus_desktop::{Config, LogicalSize, WindowBuilder, WindowCloseBehaviour};
 use std::fs;
-use std::fs::File;
 use std::path::Path;
 
 mod app;
@@ -31,15 +29,6 @@ fn main() {
     );
 }
 
-fn create_log_file() -> String {
-    let now = Local::now();
-    let date = now.format("%Y-%m-%d");
-    let path = format!("./output/log/{}.log", date);
-    if !Path::new(&path).exists() {
-        let _ = File::create(&path);
-    }
-    path
-}
 
 fn clear_graphs() {
     let path = "./output/graph/";

@@ -139,6 +139,7 @@ main {
   @include numbers;
   @include date;
   @include switch;
+  @include allergy-selector;
 }
 
 .input-block,

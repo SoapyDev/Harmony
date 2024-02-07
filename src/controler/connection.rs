@@ -9,7 +9,6 @@ use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 
 pub(crate) enum ConnectionUrls {
-    Test,
     Login,
     GetUsers,
     CreateUser,
@@ -31,7 +30,6 @@ impl Display for ConnectionUrls {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let base_url = var("CONNECTION_URL").unwrap();
         match self {
-            ConnectionUrls::Test => write!(f, "{}", base_url),
             ConnectionUrls::Login => write!(f, "{}/login", base_url),
             ConnectionUrls::GetUsers => write!(f, "{}/getUsers", base_url),
             ConnectionUrls::CreateUser => write!(f, "{}/createUser", base_url),
@@ -64,7 +62,7 @@ impl Token {
 
 impl From<UseSharedState<User>> for Token {
     fn from(value: UseSharedState<User>) -> Self {
-        Self::new(value.read().session.clone())
+        Self::new(value.read().Token.clone())
     }
 }
 

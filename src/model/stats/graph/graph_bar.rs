@@ -18,6 +18,7 @@ pub fn create_histogram(builder: &GraphBuilder, is_vertical: bool) -> Result<(),
     let default = vec![0];
     let data: &Vec<u32> = data.first().unwrap_or(&default);
 
+
     if is_vertical {
         draw_vertical_histogram(&root, title, labels, max, data, builder.get_colors())?;
     } else {

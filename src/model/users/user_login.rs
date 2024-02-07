@@ -38,8 +38,8 @@ impl UserLogin {
         match res {
             Ok(other) => {
                 user.with_mut(|val| {
-                    val.session = other.session;
-                    val.role = other.role;
+                    val.Token = other.Token;
+                    val.Role = other.Role;
                 });
                 navigator.push("/home");
             },

@@ -1,3 +1,4 @@
+use chrono::{Local, NaiveDate, NaiveTime};
 use crate::model::beneficiaries::beneficiary::Beneficiaries;
 use crate::model::users::{role::Role, user::User};
 use crate::view::admin::{stats::StatsPage, users::Users};
@@ -8,6 +9,7 @@ use dioxus::prelude::*;
 use dioxus_router::components::{Link, Outlet};
 use dioxus_router::hooks::use_navigator;
 use dioxus_router::prelude::Routable;
+use regex::Regex;
 
 #[rustfmt::skip]
 #[derive(Clone, Debug, PartialEq, Routable)]
@@ -31,8 +33,8 @@ pub(crate) fn Nav(cx: Scope) -> Element {
         use_shared_state_provider(cx, User::new);
         user = use_shared_state::<User>(cx);
     }
-    if user?.read().role.eq(&Role::Admin.to_string())
-        || user?.read().role.eq(&Role::Dev.to_string())
+    if user?.read().Role.eq(&Role::Admin.to_string())
+        || user?.read().Role.eq(&Role::Dev.to_string())
     {
         render_admin_nav(cx, user?)
     } else {
@@ -42,9 +44,10 @@ pub(crate) fn Nav(cx: Scope) -> Element {
 
 fn render_admin_nav<'a>(cx: Scope<'a>, user: &UseSharedState<User>) -> Element<'a> {
     let navigator = use_navigator(cx);
-    if user.read().session.is_empty() {
+    if user.read().Token.is_empty() {
         navigator.push(Route::Login {});
     }
+
     render! {
         nav {
             div{
@@ -75,7 +78,7 @@ fn render_admin_nav<'a>(cx: Scope<'a>, user: &UseSharedState<User>) -> Element<'
 
 fn render_user_nav<'a>(cx: &'a Scoped<'a>, user: &UseSharedState<User>) -> Element<'a> {
     let navigator = use_navigator(cx);
-    if user.read().session.is_empty() {
+    if user.read().Token.is_empty() {
         navigator.push(Route::Login {});
     }
     render! {

@@ -5,8 +5,7 @@ use crate::model::beneficiaries::details::Detail;
 use crate::model::users::user::User;
 use bincode::Decode;
 use chrono::{Datelike, Local, NaiveDate};
-use dioxus::core::Scope;
-use dioxus_hooks::{use_future, UseSharedState};
+use dioxus_hooks::UseSharedState;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 
@@ -120,14 +119,16 @@ pub struct Beneficiary {
 }
 
 impl Beneficiary {
-    pub fn new(cx: Scope, user: UseSharedState<User>) -> Self {
+    pub async fn new(user: UseSharedState<User>) -> Result<Self, String> {
         let token = Token::from(user);
-        let future = use_future(cx, (), |_| async move {
-            Self::create(token)
-                .await
-                .unwrap_or(Self::default())
-        });
-        future.value().unwrap().to_owned()
+        let beneficiary = Self::create(token)
+            .await;
+
+        match beneficiary.is_err(){
+            true => Err("Impossible de créer un bénéficiaire".to_string()),
+            false => Ok(beneficiary.unwrap().to_owned())
+        }
+
     }
     pub async fn update(&self, user: UseSharedState<User>) -> bool {
         let token_bene = TokenBeneficiary::new(Token::from(user), self.clone());

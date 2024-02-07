@@ -25,50 +25,6 @@ pub fn Home(cx: Scope) -> Element {
     let use_day = use_state(cx, || Local::now().day());
     let user = use_shared_state::<User>(cx).unwrap();
 
-    let add_date = use_future(cx, (), |_| {
-        let user = user.clone();
-        let use_details = use_details.clone();
-        let month = use_month.clone();
-        let year = use_year.clone();
-        let day = use_day.clone();
-        let use_beneficiary = use_beneficiary.clone();
-        let use_beneficiaries = use_beneficiaries.clone();
-        async move {
-            let date = format!("{}-{}-{}", year.get(), month.get(), day);
-            let presence = Presence {
-                BeneficiaryId: use_beneficiary.read().Id,
-                Date: date.clone(),
-            };
-            if Detail::push_presence(user, &use_details, presence.clone()).await {
-                use_details.with_mut(|val| val.presences.push(presence));
-                use_beneficiary.with_mut(|val| val.set_last_presence(date));
-                use_beneficiaries.with_mut(|val| val.update(&use_beneficiary.read()));
-            }
-        }
-    });
-
-    let remove_date = use_future(cx, (), |_| {
-        let user = user.clone();
-        let use_details = use_details.clone();
-        let month = use_month.clone();
-        let year = use_year.clone();
-        let day = use_day.clone();
-        let use_beneficiary = use_beneficiary.clone();
-        let use_beneficiaries = use_beneficiaries.clone();
-        async move {
-            let date = format!("{}-{}-{}", year.get(), month.get(), day);
-            let presence = Presence {
-                BeneficiaryId: use_beneficiary.read().Id,
-                Date: date.clone(),
-            };
-
-            if Detail::pop_presence(user, &use_details, presence).await {
-                use_details.with_mut(|val| val.presences.retain(|p| p.Date != date));
-                use_beneficiary.with_mut(|val| val.set_last_presence(date));
-                use_beneficiaries.with_mut(|val| val.update(&use_beneficiary.read()));
-            }
-        }
-    });
 
     render! {
         div {
@@ -174,12 +130,12 @@ pub fn Home(cx: Scope) -> Element {
                             CalendarInputMut{
                                 on_click: move |val : &Day| {
                                     use_day.set(val.day);
-                                    add_date.restart();
+                                    add_date(cx, &user, &use_beneficiary, &use_beneficiaries, &use_month, &use_year, &use_day, &use_details);
 
                                 },
                                 on_dbclick: move |val: &Day| {
                                     use_day.set(val.day);
-                                    remove_date.restart();
+                                    remove_date(cx, &user, &use_beneficiary, &use_beneficiaries, &use_month, &use_year, &use_day, &use_details);
                                 },
                                 month: get_weeks(*use_year.get(), *use_month.get(), &use_details.read().presences),
                                 current_month: *use_month.get(),
@@ -201,4 +157,38 @@ pub fn Home(cx: Scope) -> Element {
 
         }
     }
+}
+fn add_date(cx: Scope, user: &UseSharedState<User>, beneficiary: &UseRef<Beneficiary>, beneficiaries: &UseSharedState<Beneficiaries>, use_month: &UseState<u32>, use_year: &UseState<i32>, use_day: &UseState<u32>, use_details: &UseRef<Detail>){
+    use_future(cx, (user, beneficiary, beneficiaries, use_details), |(user, beneficiary, beneficiaries,details)|
+        {
+            let date = format!("{}-{}-{}", use_year.get(), use_month.get(), use_day.get());
+            let presence = Presence {
+                BeneficiaryId: beneficiary.read().Id,
+                Date: date.clone(),
+            };
+
+            async move {
+                if Detail::push_presence(user, &details, presence.clone()).await {
+                    details.with_mut(|val| val.presences.push(presence));
+                    beneficiary.with_mut(|val| val.set_last_presence(date));
+                    beneficiaries.with_mut(|val| val.update(&beneficiary.read()));
+                }
+            }
+        });
+}
+fn remove_date(cx: Scope, user: &UseSharedState<User>, beneficiary: &UseRef<Beneficiary>, beneficiaries: &UseSharedState<Beneficiaries>, use_month: &UseState<u32>, use_year: &UseState<i32>, use_day: &UseState<u32>, use_details: &UseRef<Detail>){
+    use_future(cx, (user, beneficiary, beneficiaries, use_month, use_year, use_day, use_details), |(user, beneficiary, beneficiaries, month, year, day, details)| {
+        let date = format!("{}-{}-{}", year.get(), month.get(), day);
+        let presence = Presence {
+            BeneficiaryId: beneficiary.read().Id,
+            Date: date.clone(),
+        };
+        async move {
+            if Detail::pop_presence(user, &details, presence).await {
+                details.with_mut(|val| val.presences.retain(|p| p.Date != date));
+                beneficiary.with_mut(|val| val.set_last_presence(date));
+                beneficiaries.with_mut(|val| val.update(&beneficiary.read()));
+            }
+        }
+    });
 }

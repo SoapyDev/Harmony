@@ -4,18 +4,18 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Decode, Clone)]
 pub struct User {
-    pub(crate) session: String,
-    pub(crate) role: String,
+    pub(crate) Token: String,
+    pub(crate) Role: String,
 }
 
 impl User {
     pub fn new() -> User {
         User {
-            session: String::new(),
-            role: Role::None.to_string(),
+            Token: String::new(),
+            Role: Role::None.to_string(),
         }
     }
     pub fn is_connected(&self) -> bool {
-        !self.session.is_empty() && self.role != Role::None.to_string()
+        !self.Token.is_empty() && self.Role != Role::None.to_string()
     }
 }

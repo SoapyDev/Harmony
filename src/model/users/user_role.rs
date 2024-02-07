@@ -2,6 +2,7 @@ use crate::controler::connection::Token;
 use crate::controler::user::{create_user, delete_user, get_users, update_user, UserToken};
 use crate::model::users::user::User;
 use bincode::Decode;
+use dioxus::core::Scope;
 use dioxus_hooks::{UseRef, UseSharedState};
 use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
@@ -47,7 +48,7 @@ impl UserRole {
             Role: "User".to_string(),
         };
         let user_token = UserToken {
-            Token: user.read().session.clone(),
+            Token: user.read().Token.clone(),
             User: new_user,
         };
 
@@ -62,7 +63,7 @@ impl UserRole {
 
     pub(crate) async fn update(user: UseSharedState<User>, other: UserRole) {
         let user_token = UserToken {
-            Token: user.read().session.clone(),
+            Token: user.read().Token.clone(),
             User: other.clone(),
         };
 
@@ -82,7 +83,7 @@ impl UserRole {
         };
 
         let user_token = UserToken {
-            Token: user.read().session.clone(),
+            Token: user.read().Token.clone(),
             User: user_delete,
         };
 

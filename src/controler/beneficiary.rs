@@ -70,7 +70,6 @@ impl Beneficiary {
         let config = config::standard();
         let (decoded, _len): (Beneficiary, usize) =
             decode_from_slice(&bene.bytes().await?, config)?;
-        println!("{:?}", decoded);
         Ok(decoded)
     }
 
