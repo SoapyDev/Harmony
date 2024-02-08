@@ -1,4 +1,4 @@
-#![allow(non_snake_case)]
+#![windows_subsystem = "windows"]
 
 use dioxus_desktop::WindowCloseBehaviour::LastWindowExitsApp;
 use dioxus_desktop::{Config, LogicalSize, WindowBuilder, WindowCloseBehaviour};
@@ -22,8 +22,8 @@ fn main() {
                     .with_min_inner_size(LogicalSize::new(650, 750)),
             )
             .with_background_color((20, 34, 64, 200))
-            .with_data_directory("./data")
-            .with_resource_directory("./output")
+            .with_data_directory("./output")
+            .with_resource_directory("./background")
             .with_disable_context_menu(true)
             .with_close_behaviour(close_window()),
     );

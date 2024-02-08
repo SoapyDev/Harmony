@@ -2,9 +2,8 @@ use crate::controler::connection::Token;
 use crate::controler::user::{create_user, delete_user, get_users, update_user, UserToken};
 use crate::model::users::user::User;
 use bincode::Decode;
-use dioxus::core::Scope;
+use chrono::Local;
 use dioxus_hooks::{UseRef, UseSharedState};
-use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Decode, Serialize, Clone, PartialEq)]
@@ -42,7 +41,7 @@ impl UserRole {
             Username: format!(
                 "utilisateur-{}{}",
                 users.read().len() + 3,
-                thread_rng().gen_range(0..1000000)
+                Local::now().timestamp()
             ),
             Password: String::from("pa$$w0rd"),
             Role: "User".to_string(),

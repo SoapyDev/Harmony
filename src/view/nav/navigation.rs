@@ -1,4 +1,3 @@
-use chrono::{Local, NaiveDate, NaiveTime};
 use crate::model::beneficiaries::beneficiary::Beneficiaries;
 use crate::model::users::{role::Role, user::User};
 use crate::view::admin::{stats::StatsPage, users::Users};
@@ -9,7 +8,6 @@ use dioxus::prelude::*;
 use dioxus_router::components::{Link, Outlet};
 use dioxus_router::hooks::use_navigator;
 use dioxus_router::prelude::Routable;
-use regex::Regex;
 
 #[rustfmt::skip]
 #[derive(Clone, Debug, PartialEq, Routable)]
@@ -62,13 +60,13 @@ fn render_admin_nav<'a>(cx: Scope<'a>, user: &UseSharedState<User>) -> Element<'
                 button {
                     onclick: move |_| {
                     },
-                    img{ src: "./src/assets/icon/parameters.svg"},
+                    img{ src: "./icon/parameters.svg"},
                 }
                 Link { to: Route::Login {}, onclick: move |_| {
                     let beneficiaries = use_shared_state::<Beneficiaries>(cx).unwrap();
                     beneficiaries.write().beneficiaries.clear();
                 },
-                    img{ src: "./src/assets/icon/logout.svg"},
+                    img{ src: "./icon/logout.svg"},
                 }
             }
         }
@@ -91,7 +89,7 @@ fn render_user_nav<'a>(cx: &'a Scoped<'a>, user: &UseSharedState<User>) -> Eleme
             },
                 img{
                     class: "logout",
-                    src: "./src/assets/icon/logout.svg"
+                    src: "./icon/logout.svg"
                 },
             }
 

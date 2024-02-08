@@ -1,0 +1,74 @@
+[application]
+
+# dioxus project name
+name = "Harmonie"
+
+# default platfrom
+# you can also use `dx serve/build --platform XXX` to use other platform
+# value: web | desktop
+default_platform = "desktop"
+
+# Web `build` & `serve` dist path
+out_dir = "dist"
+
+# resource (static) file folder
+asset_dir = "src/assets"
+
+[web.app]
+
+# HTML title tag content
+title = "Harmony | Votre assistant en gestion de clientèle"
+
+[web.watcher]
+
+index_on_404 = true
+
+watch_path = ["src"]
+
+# include `assets` in web platform
+[web.resource]
+
+# CSS style file
+style = ["src/assets/style/*.css"]
+
+# Javascript code file
+script = []
+
+[web.resource.dev]
+
+# Javascript code file
+# serve: [dev-server] only
+script = []
+
+[application.plugins]
+
+available = true
+
+required = []
+
+[bundler]
+# Bundle identifier
+identifier = "io.github.Harmony"
+
+# Bundle publisher
+publisher = "Harmony"
+
+# Bundle icon
+icon = ["output/icons/logo.png"]
+
+# Bundle resources
+resources = ["src/assets/*", "output/*"]
+
+# Bundle copyright
+copyright = "SoapyDev 2024"
+
+# Bundle category
+category = "Utility"
+
+# Bundle short description
+short_description = "STT pour bénéficiaires d'aide alimentaire."
+
+# Bundle long description
+long_description = """
+Harmony est un assistant pour les employés dans le domaine de l'aide alimentaire. Il permet de gérer les présences, les informations personnelles, les allergies et les statistiques.
+"""

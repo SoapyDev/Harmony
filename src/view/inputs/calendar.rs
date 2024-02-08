@@ -1,7 +1,6 @@
 use crate::model::beneficiaries::details::Presence;
 use chrono::{Datelike, Local, NaiveDate};
 use dioxus::prelude::*;
-use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
 static WEEKDAYS: [&str; 7] = ["dim.", "lun.", "mar.", "mer.", "jeu.", "ven.", "sam."];
 
@@ -101,7 +100,7 @@ pub fn get_weeks(current_year: i32, current_month: u32, presences: &[Presence]) 
     let today = Local::now().day();
 
     let present_days = presences
-        .par_iter()
+        .iter()
         .filter_map(|presence| {
             let date = NaiveDate::parse_from_str(presence.Date.as_str(), "%Y-%m-%d").unwrap();
             if date.month() == current_date.month() && date.year() == current_date.year() {

@@ -143,7 +143,7 @@ pub fn Users(cx: Scope) -> Element {
                                             },
                                             img{
                                                 class: "update",
-                                                src: "./src/assets/icon/update.svg"
+                                                src: "./icon/update.svg"
                                             }
                                         },
                                         DeleteButton {
@@ -208,7 +208,7 @@ fn CreateButton(cx: Scope, users: UseRef<Vec<UserRole>>, id: UseState<i32>) -> E
             },
             img{
                 class: "create",
-                src: "./src/assets/icon/create.svg"
+                src: "./icon/create.svg"
             }
         }
     }
@@ -249,7 +249,7 @@ fn DeleteButton(
             },
             img{
                 class: "delete",
-                src: "./src/assets/icon/delete.svg"
+                src: "./icon/delete.svg"
             }
         }
     }

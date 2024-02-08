@@ -72,12 +72,12 @@ impl GraphBuilder {
     #[cfg(target_os = "windows")]
     pub(crate) fn get_path(&self) -> PathBuf {
         let file_name = self.get_file_name();
-        Path::new(".\\output\\graph\\").join(file_name)
+        Path::new(".\\graph\\").join(file_name)
     }
     #[cfg(target_os = "linux")]
     pub(crate) fn get_path(&self) -> PathBuf {
         let file_name = self.get_file_name();
-        let path = Path::new("./output/graph/").join(file_name);
+        let path = Path::new("./graph/").join(file_name);
         path
     }
     pub(crate) fn get_labels(&self) -> Vec<String> {
