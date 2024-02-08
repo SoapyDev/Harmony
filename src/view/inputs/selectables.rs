@@ -162,23 +162,48 @@ pub(crate) fn AllergiesInputMut<'a>(
         div{
             class: "allergy-container",
             div{
-                class: "select-allergies-container",
-                label {"Allergies"},
-                select {
-                    class : "form-control select-allergies",
-                    onchange: |evt| {
-                       selected_allergy.set(evt.value.to_string());
-                    },
-                    multiple : true,
-                    for element in allergy_list.read().iter(){
-                        if !details.read().allergies.iter().any(|a| a.Allergy == *element) {
+                class: "select-container",
+                div{
+                    class: "select-allergies-container",
+                    label {"Allergies"},
+                    select {
+                        class : "form-control select-allergies",
+                        onchange: |evt| {
+                           selected_allergy.set(evt.value.to_string());
+                        },
+                        multiple : true,
+                        for element in allergy_list.read().iter(){
+                            if !details.read().allergies.iter().any(|a| a.Allergy == *element) {
+                                render!{
+                                    option{
+                                        class: "allergy",
+                                        selected: "{selected_allergy.get() == *element}",
+                                        key: "{element}",
+                                        value: "{element}",
+                                        "{element}",
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                div{
+                    class: "select-allergies-container",
+                    label {"Bénéficiaire"},
+                    select {
+                        onchange: |evt| {
+                          selected_allergy.set(evt.value.to_string());
+                        },
+                        class : "form-control select-allergies",
+                        multiple : true,
+                        for element in details.read().allergies.iter(){
                             render!{
                                 option{
                                     class: "allergy",
-                                    selected: "{selected_allergy.get() == *element}",
-                                    key: "{element}",
-                                    value: "{element}",
-                                    "{element}",
+                                    selected: "{selected_allergy.get() == &element.Allergy}",
+                                    key: "{element.Allergy}",
+                                    value: "{element.Allergy}",
+                                    "{element.Allergy}",
                                 }
                             }
                         }
@@ -187,54 +212,26 @@ pub(crate) fn AllergiesInputMut<'a>(
             }
             div{
                 class: "buttons-container",
-                div{
-                    class: "filler"
-                }
-                div{
-                    class: "allergy-buttons",
-                    button{
-                        onclick: |_|{
-                            if details.read().allergies.len() < ALLERGIES.len() {
-                                use_is_add.set(true);
-                            };
-                        },
-                        ">>"
+                button{
+                    onclick: |_|{
+                        if details.read().allergies.len() < ALLERGIES.len() {
+                            use_is_add.set(true);
+                        };
                     },
-                    button{
-                        onclick: |_|{
-                            if  !details.read().allergies.is_empty() &&
-                            details.read().allergies
-                            .iter()
-                            .any(|a| &a.Allergy == selected_allergy.get())
-                            {
-                                use_is_remove.set(true);
-                            };
-                        },
-                        "<<"
+                    "+"
+                },
+                button{
+                    onclick: |_|{
+                        if  !details.read().allergies.is_empty() &&
+                        details.read().allergies
+                        .iter()
+                        .any(|a| &a.Allergy == selected_allergy.get())
+                        {
+                            use_is_remove.set(true);
+                        };
                     },
-                }
-            }
-            div{
-                class: "select-allergies-container",
-                label {"Bénéficiaire"},
-                select {
-                    onchange: |evt| {
-                      selected_allergy.set(evt.value.to_string());
-                    },
-                    class : "form-control select-allergies",
-                    multiple : true,
-                    for element in details.read().allergies.iter(){
-                        render!{
-                            option{
-                                class: "allergy",
-                                selected: "{selected_allergy.get() == &element.Allergy}",
-                                key: "{element.Allergy}",
-                                value: "{element.Allergy}",
-                                "{element.Allergy}",
-                            }
-                        }
-                    }
-                }
+                    "-"
+                },
             }
         }
     }

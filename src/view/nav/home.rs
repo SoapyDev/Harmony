@@ -11,7 +11,7 @@ use dioxus_router::hooks::use_navigator;
 pub fn Home(cx: Scope) -> Element {
     let user = use_shared_state::<User>(cx).unwrap();
     let beneficiaries = use_shared_state::<Beneficiaries>(cx).unwrap();
-    let stats = use_shared_state::<Stats>(cx).unwrap();
+    let _stats = use_shared_state::<Stats>(cx).unwrap();
     if user.read().Token.is_empty() {
         let navigator = use_navigator(cx);
         navigator.go_back();
@@ -35,20 +35,18 @@ pub fn Home(cx: Scope) -> Element {
     }
 }
 fn load_beneficiaries(
-cx: Scope,
-user: &UseSharedState<User>,
-use_beneficiaries: &UseSharedState<Beneficiaries>,
+    cx: Scope,
+    user: &UseSharedState<User>,
+    use_beneficiaries: &UseSharedState<Beneficiaries>,
 ) {
-use_future(cx, (), |_| {
-    let beneficiaries = use_beneficiaries.clone();
-    let user = user.clone();
-    async move {
-        if beneficiaries.read().beneficiaries.is_empty() {
-            let benes = Beneficiaries::get_beneficiaries(user).await;
-            beneficiaries.with_mut(|val| val.beneficiaries = benes.beneficiaries);
+    use_future(cx, (), |_| {
+        let beneficiaries = use_beneficiaries.clone();
+        let user = user.clone();
+        async move {
+            if beneficiaries.read().beneficiaries.is_empty() {
+                let benes = Beneficiaries::get_beneficiaries(user).await;
+                beneficiaries.with_mut(|val| val.beneficiaries = benes.beneficiaries);
+            }
         }
-    }
-});
+    });
 }
-
-
