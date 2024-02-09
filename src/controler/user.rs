@@ -1,7 +1,10 @@
+#![allow(non_snake_case)]
+
 use crate::controler::connection::{ConnectionUrls, Token};
 use crate::model::users::user::User;
 use crate::model::users::user_login::UserLogin;
 use crate::model::users::user_role::UserRole;
+
 use bincode::{config, decode_from_slice};
 
 pub async fn login(user: &UserLogin) -> Result<User, anyhow::Error> {

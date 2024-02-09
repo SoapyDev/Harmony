@@ -50,9 +50,7 @@ impl Beneficiaries {
     }
     pub async fn get_beneficiaries(user: UseSharedState<User>) -> Beneficiaries {
         let token = Token::from(user);
-        let benes = Self::get_all_beneficiary(token)
-            .await
-            .unwrap_or(vec![]);
+        let benes = Self::get_all_beneficiary(token).await.unwrap_or(vec![]);
         Beneficiaries::from(benes)
     }
 
@@ -72,9 +70,7 @@ impl Beneficiaries {
             Token: Token::from(user).Token,
             Search: search.to_string(),
         };
-        let benes = Self::search(token_search)
-            .await
-            .unwrap_or(vec![]);
+        let benes = Self::search(token_search).await.unwrap_or(vec![]);
 
         Beneficiaries::from(benes)
     }
@@ -98,7 +94,7 @@ pub struct Beneficiary {
     pub(crate) PostalCode: String,
     pub(crate) Kid: u8,
     pub(crate) Adult: u8,
-    pub(crate) Birth: Option<String>,
+    pub(crate) Birth: String,
     pub(crate) LastPresence: String,
     pub(crate) Sexe: String,
     pub(crate) Language: String,
@@ -121,14 +117,12 @@ pub struct Beneficiary {
 impl Beneficiary {
     pub async fn new(user: UseSharedState<User>) -> Result<Self, String> {
         let token = Token::from(user);
-        let beneficiary = Self::create(token)
-            .await;
+        let beneficiary = Self::create(token).await;
 
-        match beneficiary.is_err(){
+        match beneficiary.is_err() {
             true => Err("Impossible de créer un bénéficiaire".to_string()),
-            false => Ok(beneficiary.unwrap().to_owned())
+            false => Ok(beneficiary.unwrap().to_owned()),
         }
-
     }
     pub async fn update(&self, user: UseSharedState<User>) -> bool {
         let token_bene = TokenBeneficiary::new(Token::from(user), self.clone());
@@ -205,11 +199,10 @@ impl Beneficiary {
         self.PostalCode = postal_code;
     }
     pub fn get_birth(&self) -> String {
-        let birth = self.Birth.clone();
-        birth.unwrap_or_default()
+        self.Birth.to_string()
     }
     pub fn set_birth(&mut self, birth: &str) {
-        self.Birth = Some(birth.to_string());
+        self.Birth = birth.to_string();
     }
 
     pub fn set_last_presence(&mut self, last_presence: String) {

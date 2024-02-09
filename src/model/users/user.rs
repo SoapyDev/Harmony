@@ -1,5 +1,8 @@
+#![allow(non_snake_case)]
+
 use crate::model::users::role::Role;
 use bincode::Decode;
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Decode, Clone)]

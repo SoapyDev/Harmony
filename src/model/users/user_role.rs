@@ -1,3 +1,4 @@
+#![allow(non_snake_case)]
 use crate::controler::connection::Token;
 use crate::controler::user::{create_user, delete_user, get_users, update_user, UserToken};
 use crate::model::users::user::User;
