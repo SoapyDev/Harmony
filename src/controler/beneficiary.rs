@@ -26,9 +26,7 @@ impl Beneficiaries {
         let decoded = tokio::task::spawn_blocking(move || {
             let (decoded, _len): (Vec<Beneficiary>, usize) =
                 decode_from_slice(bytes.as_ref(), config)
-                    .map_err(|e| {
-                        e
-                    })
+                    .map_err(|e| e)
                     .unwrap_or((vec![], 0));
             decoded
         })
@@ -66,7 +64,6 @@ impl Beneficiary {
             return Err(anyhow::Error::msg("Quelque chose s'est mal passé"));
         }
 
-
         let config = config::standard();
         let (decoded, _len): (Beneficiary, usize) =
             decode_from_slice(&bene.bytes().await?, config)?;
@@ -85,7 +82,6 @@ impl Beneficiary {
         if bene.status() != StatusCode::OK {
             return Err(anyhow::Error::msg("Quelque chose s'est mal passé"));
         }
-
 
         match bene.status() {
             StatusCode::OK => Ok(()),

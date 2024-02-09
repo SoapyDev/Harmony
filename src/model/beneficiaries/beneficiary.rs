@@ -1,6 +1,8 @@
 #![allow(non_snake_case)]
 
-use crate::controler::connection::{Token, TokenBeneficiary, TokenBeneficiaryId, TokenSearch};
+use crate::controler::connection::{
+    encrypt, Token, TokenBeneficiary, TokenBeneficiaryId, TokenSearch,
+};
 use crate::model::beneficiaries::details::Detail;
 use crate::model::users::user::User;
 use bincode::Decode;
@@ -50,7 +52,8 @@ impl Beneficiaries {
     }
     pub async fn get_beneficiaries(user: UseSharedState<User>) -> Beneficiaries {
         let token = Token::from(user);
-        let benes = Self::get_all_beneficiary(token).await.unwrap_or(vec![]);
+        let mut benes = Self::get_all_beneficiary(token).await.unwrap_or(vec![]);
+        benes.iter_mut().for_each(|b| b.decrypt());
         Beneficiaries::from(benes)
     }
 
@@ -70,8 +73,8 @@ impl Beneficiaries {
             Token: Token::from(user).Token,
             Search: search.to_string(),
         };
-        let benes = Self::search(token_search).await.unwrap_or(vec![]);
-
+        let mut benes = Self::search(token_search).await.unwrap_or(vec![]);
+        benes.iter_mut().for_each(|b| b.decrypt());
         Beneficiaries::from(benes)
     }
 
@@ -121,11 +124,15 @@ impl Beneficiary {
 
         match beneficiary.is_err() {
             true => Err("Impossible de créer un bénéficiaire".to_string()),
-            false => Ok(beneficiary.unwrap().to_owned()),
+            false => {
+                let mut bene = beneficiary.unwrap();
+                bene.decrypt();
+                Ok(bene)
+            }
         }
     }
     pub async fn update(&self, user: UseSharedState<User>) -> bool {
-        let token_bene = TokenBeneficiary::new(Token::from(user), self.clone());
+        let token_bene = TokenBeneficiary::new(Token::from(user), self.encrypt());
         if Self::update_beneficiary(token_bene).await.is_err() {
             return false;
         }
@@ -133,9 +140,11 @@ impl Beneficiary {
     }
     pub async fn get_beneficiary(user: UseSharedState<User>, id: i32) -> (Beneficiary, Detail) {
         let token_id: TokenBeneficiaryId = TokenBeneficiaryId::new(Token::from(user), id);
-        Self::get_beneficiary_details(token_id)
+        let (mut bene, details) = Self::get_beneficiary_details(token_id)
             .await
-            .unwrap_or((Self::default(), Detail::default()))
+            .unwrap_or((Self::default(), Detail::default()));
+        bene.decrypt();
+        (bene, details)
     }
 
     pub fn set_phone(&mut self) {
@@ -245,5 +254,29 @@ impl Beneficiary {
         } else {
             "Non"
         }
+    }
+
+    pub(crate) fn encrypt(&self) -> Self {
+        let mut bene = self.clone();
+        bene.Phone = encrypt(bene.Phone.as_bytes());
+        bene.Email = encrypt(&bene.Email.as_bytes());
+        bene.Address = encrypt(&bene.Address.as_bytes());
+        bene.PostalCode = encrypt(&bene.PostalCode.as_bytes());
+        bene.TsNote = encrypt(&bene.TsNote.as_bytes());
+        bene.AdminNote = encrypt(&bene.AdminNote.as_bytes());
+        bene.GeneralNote = encrypt(&bene.GeneralNote.as_bytes());
+        bene.Situation = encrypt(&bene.Situation.as_bytes());
+        bene
+    }
+
+    pub(crate) fn decrypt(&mut self) {
+        self.Phone = String::from_utf8_lossy(&self.Phone.as_bytes()).to_string();
+        self.Email = String::from_utf8_lossy(&self.Email.as_bytes()).to_string();
+        self.Address = String::from_utf8_lossy(&self.Address.as_bytes()).to_string();
+        self.PostalCode = String::from_utf8_lossy(&self.PostalCode.as_bytes()).to_string();
+        self.TsNote = String::from_utf8_lossy(&self.TsNote.as_bytes()).to_string();
+        self.AdminNote = String::from_utf8_lossy(&self.AdminNote.as_bytes()).to_string();
+        self.GeneralNote = String::from_utf8_lossy(&self.GeneralNote.as_bytes()).to_string();
+        self.Situation = String::from_utf8_lossy(&self.Situation.as_bytes()).to_string();
     }
 }
