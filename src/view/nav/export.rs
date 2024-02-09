@@ -36,15 +36,19 @@ fn make_folder() -> Result<PathBuf, anyhow::Error> {
 
 #[cfg(target_os = "windows")]
 fn make_folder() -> Result<PathBuf, anyhow::Error> {
-    let current_user = std::env::var("USER")?;
+    println!("windows");
+    let current_user = std::env::var("USERPROFILE")?;
+    println!("{}", current_user);
     let current_date = chrono::Local::now().format("%d-%m-%Y_%H-%M-%S");
     let path = format!(
-        "C:\\Users\\{}\\Downloads\\Harmony\\{}",
+        "{}\\Downloads\\Harmony\\{}",
         current_user, current_date
     );
     let path = PathBuf::from(path);
+    println!("{:?}", path);
     if !path.exists() {
         fs::create_dir_all(path.clone())?;
+        println!("created");
     }
     Ok(path)
 }
@@ -54,14 +58,16 @@ fn make_file_path(mut path: PathBuf) -> PathBuf {
     path
 }
 
+
+
 fn copy_graphs(path: PathBuf) -> Result<(), anyhow::Error> {
     let path = path.join("graphs");
-    copy_files(PathBuf::from("./output/graph"), path)
+    copy_files(PathBuf::from("./graph"), path)
 }
 
 fn copy_logos(path: PathBuf) -> Result<(), anyhow::Error> {
     let path = path.join("logos");
-    copy_files(PathBuf::from("./output/icons"), path)
+    copy_files(PathBuf::from("./exportable_icons"), path)
 }
 
 fn copy_files(origin: PathBuf, destination: PathBuf) -> Result<(), anyhow::Error> {

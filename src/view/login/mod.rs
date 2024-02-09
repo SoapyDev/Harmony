@@ -34,7 +34,7 @@ pub(crate) fn Login(cx: Scope) -> Element {
             div {
                 class: "form-container",
                 header{
-                    img{ src: "./src/assets/icon/asbc.svg" },
+                    img{ src: "./exportable_icons/asbc.svg" },
                 }
                 form {
                     onsubmit: move |evt| {

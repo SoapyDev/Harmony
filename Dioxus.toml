@@ -54,10 +54,10 @@ identifier = "io.github.Harmony"
 publisher = "Harmony"
 
 # Bundle icon
-icon = ["output/icons/logo.png"]
+icon = [".icon/logo.png"]
 
 # Bundle resources
-resources = ["src/assets/*", "output/*"]
+resources = ["src/assets/**"]
 
 # Bundle copyright
 copyright = "SoapyDev 2024"

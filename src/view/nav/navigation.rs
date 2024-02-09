@@ -8,6 +8,7 @@ use dioxus::prelude::*;
 use dioxus_router::components::{Link, Outlet};
 use dioxus_router::hooks::use_navigator;
 use dioxus_router::prelude::Routable;
+use crate::view::nav::export::export;
 
 #[rustfmt::skip]
 #[derive(Clone, Debug, PartialEq, Routable)]
@@ -59,6 +60,10 @@ fn render_admin_nav<'a>(cx: Scope<'a>, user: &UseSharedState<User>) -> Element<'
             div{
                 button {
                     onclick: move |_| {
+                        let _ = export(cx).map_err(|e| {
+                            eprintln!("Error exporting: {:?}", e);
+                        });
+
                     },
                     img{ src: "./icon/parameters.svg"},
                 }
