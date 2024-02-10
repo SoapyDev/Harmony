@@ -6,14 +6,14 @@ use dioxus::prelude::*;
 use dioxus_router::prelude::use_navigator;
 
 #[component]
-pub fn Home(cx: Scope) -> Element {
+pub fn Beneficiaries(cx: Scope) -> Element {
     let navigator = use_navigator(cx);
     let user = use_shared_state::<User>(cx).unwrap();
     let beneficiaries = use_shared_state::<Beneficiaries>(cx).unwrap();
     let bene = use_state(cx, Beneficiary::default);
     let is_clicked = use_state(cx, || false);
 
-    let _future = use_future(cx, (user, is_clicked), |(user, click)|{
+    let _new = use_future(cx, (user, is_clicked), |(user, click)|{
         let beneficiary = bene.clone();
         let beneficiaries = beneficiaries.clone();
         async move{

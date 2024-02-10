@@ -22,13 +22,13 @@ pub fn Home(cx: Scope) -> Element {
         style{include_str!("../../assets/style/home.css")},
         match user.read().Role.as_str() {
             "Admin" | "Dev" => render! {
-                admin::beneficiary::Home{}
+                admin::beneficiaries::Beneficiaries{}
             },
             "TS" => render! {
-                ts::beneficiaries::Home{}
+                ts::beneficiaries::Beneficiaries{}
             },
             _ => render!{
-                    user::Home{}
+                    user::beneficiaries::Beneficiaries{}
                 }
             ,
         }

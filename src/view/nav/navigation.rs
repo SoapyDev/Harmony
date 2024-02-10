@@ -2,13 +2,13 @@ use crate::model::beneficiaries::beneficiary::Beneficiaries;
 use crate::model::users::{role::Role, user::User};
 use crate::view::admin::{stats::StatsPage, users::Users};
 use crate::view::login::Login;
+use crate::view::nav::beneficiary_page::BeneficiaryPage;
+use crate::view::nav::export::export;
 use crate::view::nav::home::Home;
-use crate::view::ts::beneficiary::BeneficiaryPage;
 use dioxus::prelude::*;
 use dioxus_router::components::{Link, Outlet};
 use dioxus_router::hooks::use_navigator;
 use dioxus_router::prelude::Routable;
-use crate::view::nav::export::export;
 
 #[rustfmt::skip]
 #[derive(Clone, Debug, PartialEq, Routable)]

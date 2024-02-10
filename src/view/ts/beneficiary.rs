@@ -23,7 +23,7 @@ use dioxus::prelude::*;
 use dioxus_router::prelude::use_navigator;
 
 #[component]
-pub fn BeneficiaryPage(cx: Scoped, id: i32) -> Element {
+pub fn Beneficiary(cx: Scoped, id: i32) -> Element {
     let navigator = use_navigator(cx);
     let user = use_shared_state::<User>(cx).unwrap();
     let beneficiaries = use_shared_state::<Beneficiaries>(cx).unwrap();
@@ -331,8 +331,15 @@ pub fn BeneficiaryPage(cx: Scoped, id: i32) -> Element {
     }
 }
 
-fn get_details(cx: Scope<BeneficiaryPageProps>, user: &UseSharedState<User>, beneficiary: &UseRef<Beneficiary>, beneficiaries: &UseSharedState<Beneficiaries>, use_details: &UseRef<Detail>, id: &i32) {
-    use_future(cx, (user, id), |(user,id)| {
+fn get_details(
+    cx: Scope<BeneficiaryProps>,
+    user: &UseSharedState<User>,
+    beneficiary: &UseRef<Beneficiary>,
+    beneficiaries: &UseSharedState<Beneficiaries>,
+    use_details: &UseRef<Detail>,
+    id: &i32,
+) {
+    use_future(cx, (user, id), |(user, id)| {
         let details = use_details.clone();
         let beneficiary = beneficiary.clone();
         let beneficiaries = beneficiaries.clone();
@@ -345,7 +352,12 @@ fn get_details(cx: Scope<BeneficiaryPageProps>, user: &UseSharedState<User>, ben
         }
     });
 }
-fn update_beneficiary(cx : Scope<BeneficiaryPageProps>, beneficiary: &UseRef<Beneficiary>, user: &UseSharedState<User>, beneficiaries: &UseSharedState<Beneficiaries>) {
+fn update_beneficiary(
+    cx: Scope<BeneficiaryProps>,
+    beneficiary: &UseRef<Beneficiary>,
+    user: &UseSharedState<User>,
+    beneficiaries: &UseSharedState<Beneficiaries>,
+) {
     use_future(cx, user, |user| {
         let beneficiary = beneficiary.clone();
         let beneficiaries = beneficiaries.clone();
@@ -358,29 +370,45 @@ fn update_beneficiary(cx : Scope<BeneficiaryPageProps>, beneficiary: &UseRef<Ben
     });
 }
 
+fn add_date(
+    cx: Scope<BeneficiaryProps>,
+    user: &UseSharedState<User>,
+    beneficiary: &UseRef<Beneficiary>,
+    beneficiaries: &UseSharedState<Beneficiaries>,
+    use_month: &UseState<u32>,
+    use_year: &UseState<i32>,
+    use_day: &UseState<u32>,
+    use_details: &UseRef<Detail>,
+) {
+    use_future(cx, user, |user| {
+        let date = format!("{}-{}-{}", use_year.get(), use_month.get(), use_day.get());
+        let presence = Presence {
+            BeneficiaryId: beneficiary.read().Id,
+            Date: date.clone(),
+        };
+        let details = use_details.clone();
+        let beneficiary = beneficiary.clone();
+        let beneficiaries = beneficiaries.clone();
 
-fn add_date(cx: Scope<BeneficiaryPageProps>, user: &UseSharedState<User>, beneficiary: &UseRef<Beneficiary>, beneficiaries: &UseSharedState<Beneficiaries>, use_month: &UseState<u32>, use_year: &UseState<i32>, use_day: &UseState<u32>, use_details: &UseRef<Detail>){
-    use_future(cx, user, |user|
-        {
-            let date = format!("{}-{}-{}", use_year.get(), use_month.get(), use_day.get());
-            let presence = Presence {
-                BeneficiaryId: beneficiary.read().Id,
-                Date: date.clone(),
-            };
-            let details = use_details.clone();
-            let beneficiary = beneficiary.clone();
-            let beneficiaries = beneficiaries.clone();
-
-            async move {
-                if Detail::push_presence(user, &details, presence.clone()).await {
-                    details.with_mut(|val| val.presences.push(presence));
-                    beneficiary.with_mut(|val| val.set_last_presence(date));
-                    beneficiaries.with_mut(|val| val.update(&beneficiary.read()));
-                }
+        async move {
+            if Detail::push_presence(user, &details, presence.clone()).await {
+                details.with_mut(|val| val.presences.push(presence));
+                beneficiary.with_mut(|val| val.set_last_presence(date));
+                beneficiaries.with_mut(|val| val.update(&beneficiary.read()));
             }
-        });
+        }
+    });
 }
-fn remove_date(cx: Scope<BeneficiaryPageProps>, user: &UseSharedState<User>, beneficiary: &UseRef<Beneficiary>, beneficiaries: &UseSharedState<Beneficiaries>, use_month: &UseState<u32>, use_year: &UseState<i32>, use_day: &UseState<u32>, use_details: &UseRef<Detail>){
+fn remove_date(
+    cx: Scope<BeneficiaryProps>,
+    user: &UseSharedState<User>,
+    beneficiary: &UseRef<Beneficiary>,
+    beneficiaries: &UseSharedState<Beneficiaries>,
+    use_month: &UseState<u32>,
+    use_year: &UseState<i32>,
+    use_day: &UseState<u32>,
+    use_details: &UseRef<Detail>,
+) {
     use_future(cx, user, |user| {
         let date = format!("{}-{}-{}", use_year.get(), use_month.get(), use_day);
         let presence = Presence {
