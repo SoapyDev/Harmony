@@ -1,8 +1,6 @@
 #![allow(non_snake_case)]
 
-use crate::controler::connection::{
-    encrypt, Token, TokenBeneficiary, TokenBeneficiaryId, TokenSearch,
-};
+use crate::controler::connection::{decrypt, encrypt, Token, TokenBeneficiary, TokenBeneficiaryId, TokenSearch};
 use crate::model::beneficiaries::details::Detail;
 use crate::model::users::user::User;
 use bincode::Decode;
@@ -57,7 +55,7 @@ impl Beneficiaries {
         Beneficiaries::from(benes)
     }
 
-    pub fn find(&self, id: &i32) -> Option<&Beneficiary> {
+    pub(crate) fn find(&self, id: &i32) -> Option<&Beneficiary> {
         self.beneficiaries.iter().find(|b| b.Id == *id)
     }
 
@@ -97,7 +95,12 @@ pub struct Beneficiary {
     pub(crate) PostalCode: String,
     pub(crate) Kid: u8,
     pub(crate) Adult: u8,
-    pub(crate) Birth: String,
+    pub(crate) MonthlyAmount: f64,
+    pub(crate) WeeklyAmount: f64,
+    pub(crate) Category: i32,
+    pub(crate) MonthlyLimit: f64,
+    pub(crate) WeeklyLimit: f64,
+    pub(crate) Birth: Option<String>,
     pub(crate) LastPresence: String,
     pub(crate) Sexe: String,
     pub(crate) Language: String,
@@ -111,10 +114,6 @@ pub struct Beneficiary {
     pub(crate) IsEmployed: bool,
     pub(crate) HasAllergies: bool,
     pub(crate) HasGeneralNote: bool,
-    pub(crate) GeneralNote: String,
-    pub(crate) AdminNote: String,
-    pub(crate) TsNote: String,
-    pub(crate) Situation: String,
 }
 
 impl Beneficiary {
@@ -132,8 +131,9 @@ impl Beneficiary {
         }
     }
     pub async fn update(&self, user: UseSharedState<User>) -> bool {
-        let token_bene = TokenBeneficiary::new(Token::from(user), self.encrypt());
-        if Self::update_beneficiary(token_bene).await.is_err() {
+        let bene = self.encrypt();
+        let token_bene = TokenBeneficiary::new(Token::from(user), bene);
+        if let Err(_) =  Self::update_beneficiary(token_bene).await {
             return false;
         }
         true
@@ -208,10 +208,13 @@ impl Beneficiary {
         self.PostalCode = postal_code;
     }
     pub fn get_birth(&self) -> String {
-        self.Birth.to_string()
+        match &self.Birth {
+            Some(birth) => birth.to_string(),
+            None => "".to_string(),
+        }
     }
     pub fn set_birth(&mut self, birth: &str) {
-        self.Birth = birth.to_string();
+        self.Birth = Some(birth.to_string());
     }
 
     pub fn set_last_presence(&mut self, last_presence: String) {
@@ -232,14 +235,6 @@ impl Beneficiary {
 
         self.IsActive = presence >= cutoff_year || presence >= cutoff_month;
     }
-    pub fn set_has_general_note(&mut self) {
-        self.HasGeneralNote = !self.GeneralNote.is_empty();
-    }
-
-    pub fn set_general_note(&mut self, general_note: &str) {
-        self.GeneralNote = general_note.to_string();
-        self.set_has_general_note();
-    }
 
     pub(crate) fn has_general_note<'a>(&self) -> &'a str {
         if self.HasGeneralNote {
@@ -259,24 +254,24 @@ impl Beneficiary {
     pub(crate) fn encrypt(&self) -> Self {
         let mut bene = self.clone();
         bene.Phone = encrypt(bene.Phone.as_bytes());
-        bene.Email = encrypt(&bene.Email.as_bytes());
-        bene.Address = encrypt(&bene.Address.as_bytes());
-        bene.PostalCode = encrypt(&bene.PostalCode.as_bytes());
-        bene.TsNote = encrypt(&bene.TsNote.as_bytes());
-        bene.AdminNote = encrypt(&bene.AdminNote.as_bytes());
-        bene.GeneralNote = encrypt(&bene.GeneralNote.as_bytes());
-        bene.Situation = encrypt(&bene.Situation.as_bytes());
+        bene.Email = encrypt(bene.Email.as_bytes());
+        bene.Address = encrypt(bene.Address.as_bytes());
+        bene.PostalCode = encrypt(bene.PostalCode.as_bytes());
         bene
     }
 
     pub(crate) fn decrypt(&mut self) {
-        self.Phone = String::from_utf8_lossy(&self.Phone.as_bytes()).to_string();
-        self.Email = String::from_utf8_lossy(&self.Email.as_bytes()).to_string();
-        self.Address = String::from_utf8_lossy(&self.Address.as_bytes()).to_string();
-        self.PostalCode = String::from_utf8_lossy(&self.PostalCode.as_bytes()).to_string();
-        self.TsNote = String::from_utf8_lossy(&self.TsNote.as_bytes()).to_string();
-        self.AdminNote = String::from_utf8_lossy(&self.AdminNote.as_bytes()).to_string();
-        self.GeneralNote = String::from_utf8_lossy(&self.GeneralNote.as_bytes()).to_string();
-        self.Situation = String::from_utf8_lossy(&self.Situation.as_bytes()).to_string();
+        if !self.Phone.is_empty() {
+            self.Phone = String::from_utf8(decrypt(&self.Phone)).unwrap_or_default();
+        }
+        if !self.Email.is_empty() {
+            self.Email = String::from_utf8(decrypt(&self.Email)).unwrap_or_default();
+        }
+        if !self.Address.is_empty() {
+            self.Address = String::from_utf8(decrypt(&self.Address)).unwrap_or_default();
+        }
+        if !self.PostalCode.is_empty() {
+            self.PostalCode = String::from_utf8(decrypt(&self.PostalCode)).unwrap_or_default();
+        }
     }
 }

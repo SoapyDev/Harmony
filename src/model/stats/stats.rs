@@ -19,10 +19,12 @@ use chrono::NaiveDate;
 use dioxus_hooks::UseSharedState;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
+use crate::model::stats::statistiques::amount::{Amount, Amounts};
 
 #[derive(Decode, Serialize, Deserialize, Debug)]
 pub(crate) struct StatsRes {
     pub(crate) Presences: Vec<Presence>,
+    pub(crate) Amounts: Vec<Amount>,
     pub(crate) Ages: Vec<Age>,
     pub(crate) Cities: Vec<City>,
     pub(crate) Employments: Vec<Employment>,
@@ -38,6 +40,7 @@ pub(crate) struct StatsRes {
 #[derive(Decode, Serialize, Deserialize, Debug)]
 pub(crate) struct Stats {
     pub(crate) presences: Presences,
+    pub(crate) amounts: Amounts,
     pub(crate) ages: Ages,
     pub(crate) cities: Cities,
     pub(crate) employments: Employments,
@@ -54,6 +57,7 @@ impl Stats {
     pub(crate) fn new() -> Self {
         Self {
             presences: Presences::default(),
+            amounts: Amounts::default(),
             ages: Ages::default(),
             cities: Cities::default(),
             employments: Employments::default(),
@@ -79,6 +83,7 @@ impl Stats {
     pub(crate) fn get_labels() -> Vec<String> {
         vec![
             "Présence".to_string(),
+            "Montants".to_string(),
             "Âge".to_string(),
             "Ville".to_string(),
             "Emploi".to_string(),
@@ -97,6 +102,7 @@ impl From<StatsRes> for Stats {
     fn from(value: StatsRes) -> Self {
         Self {
             presences: Presences::from_vec(value.Presences),
+            amounts: Amounts::from_vec(value.Amounts),
             ages: Ages::from_vec(value.Ages),
             cities: Cities::from_vec(value.Cities),
             employments: Employments::from_vec(value.Employments),
@@ -114,6 +120,7 @@ impl From<StatsRes> for Stats {
 #[derive(Clone, PartialEq)]
 pub(crate) enum StatType {
     Presence(Presences),
+    Amount(Amounts),
     Age(Ages),
     City(Cities),
     Employment(Employments),
@@ -130,6 +137,7 @@ impl StatType {
     pub(crate) fn new(stats: &UseSharedState<Stats>, value: &str) -> Self {
         match value {
             "Présence" => StatType::Presence(stats.read().presences.clone()),
+            "Montants" => StatType::Amount(stats.read().amounts.clone()),
             "Âge" => StatType::Age(stats.read().ages.clone()),
             "Ville" => StatType::City(stats.read().cities.clone()),
             "Emploi" => StatType::Employment(stats.read().employments.clone()),
@@ -149,6 +157,7 @@ impl StatType {
     pub(crate) fn get_value(&self) -> String {
         match self {
             StatType::Presence(_) => "Présence".to_string(),
+            StatType::Amount(_) => "Montants".to_string(),
             StatType::Age(_) => "Âge".to_string(),
             StatType::City(_) => "Ville".to_string(),
             StatType::Employment(_) => "Emploi".to_string(),
@@ -164,6 +173,7 @@ impl StatType {
     pub(crate) fn get_type(&self) -> String {
         match self {
             StatType::Presence(_) => "presence".to_string(),
+            StatType::Amount(_) => "amount".to_string(),
             StatType::Age(_) => "âge".to_string(),
             StatType::City(_) => "ville".to_string(),
             StatType::Employment(_) => "situation d'emploi".to_string(),
@@ -179,6 +189,7 @@ impl StatType {
     pub(crate) fn get_labels(&self) -> Vec<String> {
         match self {
             StatType::Presence(_) => Presences::get_labels(),
+            StatType::Amount(_) => Amounts::get_labels(),
             StatType::Age(_) => Ages::get_labels(),
             StatType::City(_) => Cities::get_labels(),
             StatType::Employment(_) => Employments::get_labels(),
@@ -195,6 +206,7 @@ impl StatType {
     pub(crate) fn get_max(&self) -> (usize, u32) {
         match self {
             StatType::Presence(p) => p.get_max(),
+            StatType::Amount(a) => a.get_max(),
             StatType::Age(a) => a.get_max(),
             StatType::City(c) => c.get_max(),
             StatType::Employment(e) => e.get_max(),
@@ -211,6 +223,7 @@ impl StatType {
     pub(crate) fn get_data(&self) -> Vec<DateData> {
         match self {
             StatType::Presence(p) => p.get_data(),
+            StatType::Amount(a) => a.get_data(),
             StatType::Age(a) => a.get_data(),
             StatType::City(c) => c.get_data(),
             StatType::Employment(e) => e.get_data(),

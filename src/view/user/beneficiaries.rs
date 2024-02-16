@@ -1,16 +1,7 @@
 use crate::model::beneficiaries::beneficiary::{Beneficiaries, Beneficiary};
-use crate::model::beneficiaries::details::{Detail, Presence};
-use crate::model::stats::statistiques::language::Languages;
-use crate::model::stats::traits::Filterable;
+use crate::model::beneficiaries::details::Detail;
 use crate::model::users::user::User;
-use crate::view::inputs::calendar::{get_weeks, CalendarInputMut, Day};
-use crate::view::inputs::dates::Date;
-use crate::view::inputs::numbers::NumberInput;
-use crate::view::inputs::selectables::{get_selected_months, get_selected_years, SelectInput};
-use crate::view::inputs::switches::SwitchInput;
-use crate::view::inputs::textareas::TextArea;
-use crate::view::inputs::texts::TextInput;
-use crate::view::table::beneficiary_table::BeneficiariesTable;
+use crate::view::table::user_table::UserTable;
 use chrono::{Datelike, Local};
 use dioxus::prelude::*;
 
@@ -29,7 +20,7 @@ pub fn Beneficiaries(cx: Scope) -> Element {
             class: "home-container",
             div{
                 class: "beneficiaries-container",
-                BeneficiariesTable{},
+                UserTable{},
             }
         }
     }

@@ -102,6 +102,8 @@ pub fn Users(cx: Scope) -> Element {
                                             r#type: "text",
                                             value: "{current_user.read().Username}",
                                             placeholder: "Nom d'utilisateur",
+                                            min: "3",
+                                            max: "45",
                                         },
                                     },
                                     td{
@@ -112,6 +114,8 @@ pub fn Users(cx: Scope) -> Element {
                                             r#type: "password",
                                             placeholder: "*******************",
                                             value: "{current_user.read().Password}",
+                                            min: "8",
+                                            max: "45",
                                         },
                                     },
                                     td{

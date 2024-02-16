@@ -17,6 +17,7 @@ use crate::view::inputs::texts::TextInputMut;
 use chrono::{Datelike, Local};
 use dioxus::prelude::*;
 use dioxus_router::hooks::use_navigator;
+use crate::model::stats::statistiques::city::Cities;
 
 #[component]
 pub fn Beneficiary(cx: Scoped, id: i32) -> Element {
@@ -45,132 +46,191 @@ pub fn Beneficiary(cx: Scoped, id: i32) -> Element {
     let use_month = use_state(cx, || Local::now().month());
     let use_year = use_state(cx, || Local::now().year());
     let use_day = use_state(cx, || Local::now().day());
+
+    let use_change = use_state(cx, || false);
+
+    let update = use_future(cx, use_change, |change| {
+        let user = user.clone();
+        let beneficiary = use_beneficiary.clone();
+        let beneficiaries = use_beneficiaries.clone();
+        async move {
+            if !change.get() {
+                return;
+            }
+            let bene = beneficiary.read().clone();
+            if bene.update(user).await {
+                let id = bene.Id;
+                beneficiaries.with_mut(|val| val.update(&beneficiary.read()));
+            }
+            change.set(false);
+        }
+    });
+
     render! {
-            div{
-                class: "beneficiary-container",
-                form{
-                    div {
-                        class: "form-group input-block",
+        header{
+            class: "header",
+            button{
+                class: "back-button",
+                onclick: move |_| {
+                    navigator.go_back();
+                },
+                img{src: "./icon/return.svg"}
+            }
+        },
+        div{
+            class: "beneficiary-container",
+            form{
+                onsubmit: move |evt| evt.stop_propagation(),
+                class: "public-form form",
+                h2{"Informations personnelles"},
+                div{
+                    class: "row",
+                    TextInputMut{
+                        on_input: move |evt: FormEvent| use_beneficiary.with_mut(move |val| val.FirstName = evt.value.to_string()),
+                        on_change: move |_ : FormEvent| {use_change.set(true)},
+                        value:  use_beneficiary.read().FirstName.to_string(),
+                        label: "Prénom",
+                        class: "input",
+                    },
+                    TextInputMut{
+                        on_input: move |evt: FormEvent| use_beneficiary.with_mut(move |val| val.LastName = evt.value.to_string()),
+                        on_change: move |_ : FormEvent| {use_change.set(true)},
+                        value: use_beneficiary.read().LastName.to_string(),
+                        label: "Nom",
+                        class: "input",
+                    },
+                    DateMut{
+                            on_change: move |event : FormEvent| {
+                                use_beneficiary.with_mut(move |val| val.set_birth(&event.value));
+                                use_change.set(true);
+                            },
+                            value: use_beneficiary.read().get_birth(),
+                            label: "Date de naissance",
+                            class: "input",
+                    },
+                }
+                div{
+                    class: "row",
+                    TextInputMut{
+                        on_input: move |evt: FormEvent| use_beneficiary.with_mut(|val| val.Address = evt.value.to_string()),
+                        on_change: move |_: FormEvent| {use_change.set(true)},
+                        value: use_beneficiary.read().Address.to_string(),
+                        class: "input",
+                        label: "Adresse",
+                    },
+                    TextInputMut{
+                        on_input: move |evt:FormEvent| use_beneficiary.with_mut(|val| val.set_postal_code(&evt.value)),
+                        on_change: move |_: FormEvent|{use_change.set(true)},
+                        value: use_beneficiary.read().PostalCode.to_string(),
+                        class: "input",
+                        label: "Code postal",
+                    },
+                   SelectInputMut{
+                        on_change: move |evt: FormEvent| {
+                            use_beneficiary.with_mut(|val| val.City = evt.value.to_string());
+                            use_change.set(true);
+                        },
+                        value: use_beneficiary.read().City.to_string(),
+                        values: Cities::get_selectable_values(),
+                        list: Cities::get_labels(),
+                        class: "select",
+                        label: "Ville",
+                        is_multiple: false ,
+                    },
+                },
+                div{
+                    class: "row",
+                    SelectInputMut{
+                        on_change: move |evt: FormEvent| {
+                            use_beneficiary.with_mut(move |val| val.Language = evt.value.to_string());
+                            use_change.set(true);
+                        },
+                        value: use_beneficiary.read().Language.to_string(),
+                        values: Languages::get_selectable_values(),
+                        list: Languages::get_labels(),
+                        is_multiple: false ,
+                        label: "Langue",
+                        class: "select",
+                    },
+                    SelectInputMut{
+                        on_change: move |evt: FormEvent| {
+                            use_beneficiary.with_mut(move |val| val.Sexe = evt.value.to_string());
+                            use_change.set(true);
+                        },
+                        value: use_beneficiary.read().Sexe.to_string(),
+                        values: Sexes::get_selectable_values(),
+                        list: Sexes::get_labels(),
+                        is_multiple: false ,
+                        label: "Sexe",
+                        class: "select"
+                    },
+                    SelectInputMut{
+                        on_change: move |evt: FormEvent| {
+                            use_beneficiary.with_mut(|val| val.Origin = evt.value.to_string());
+                            use_change.set(true);
+                        },
+                        value: use_beneficiary.read().Origin.to_string(),
+                        values: Origins::get_selectable_values(),
+                        list: Origins::get_labels(),
+                        is_multiple: false ,
+                        label: "Origine",
+                        class: "select"
+                    },
+                },
                         div{
                             class: "row",
-                            TextInputMut{
-                                on_input: move |evt: FormEvent| use_beneficiary.with_mut(move |val| val.FirstName = evt.value.to_string()),
-                                on_change: move |_ : FormEvent| {},
-                                value:  use_beneficiary.read().FirstName.to_string(),
-                                label: "Prénom",
-                                class: "",
+                            NumberInputMut{
+                                on_change: move |evt : FormEvent| {
+                                    use_beneficiary.with_mut(move|val| val.Adult = evt.value.parse::<u8>().unwrap_or_default());
+                                    use_change.set(true);
+                                },
+                                value:use_beneficiary.read().Adult.to_string(),
+                                label: "Adultes",
+                                class: "adultes",
+                                min: 0,
+                                max: 50,
                             },
-                            TextInputMut{
-                                on_input: move |evt: FormEvent| use_beneficiary.with_mut(move |val| val.LastName = evt.value.to_string()),
-                                on_change: move |_ : FormEvent| {},
-                                value: use_beneficiary.read().LastName.to_string(),
-                                label: "Nom",
-                                class: "lastname"
+                            NumberInputMut{
+                                on_change: move |evt: FormEvent|{
+                                    use_beneficiary.with_mut(move|val| val.Kid = evt.value.parse::<u8>().unwrap_or_default());
+                                    use_change.set(true);
+                                },
+                                value: use_beneficiary.read().Kid.to_string(),
+                                label: "Enfants",
+                                class: "enfants",
+                                min: 0,
+                                max: 50,
                             },
                         }
-                        div{
-                            class: "row",
-                            DateMut{
-                                    on_change: move |event : FormEvent| {
-                                        use_beneficiary.with_mut(move |val| val.set_birth(&event.value));
-                                    },
-                                    value: use_beneficiary.read().get_birth(),
-                                    label: "Date de naissance",
-                                    class: "birthdate",
-                            },
-                            SelectInputMut{
-                                on_change: move |evt: FormEvent| {
-                                    use_beneficiary.with_mut(move |val| val.Language = evt.value.to_string());
-                                },
-                                value: use_beneficiary.read().Language.to_string(),
-                                values: Languages::get_selectable_values(),
-                                list: Languages::get_labels(),
-                                is_multiple: false ,
-                                label: "Langue",
-                                class: "select",
-                            },
-                        },
-                            div{
-                                class: "row",
-                                SelectInputMut{
-                                    on_change: move |evt: FormEvent| {
-                                        use_beneficiary.with_mut(move |val| val.Sexe = evt.value.to_string());
-                                    },
-                                    value: use_beneficiary.read().Sexe.to_string(),
-                                    values: Sexes::get_selectable_values(),
-                                    list: Sexes::get_labels(),
-                                    is_multiple: false ,
-                                    label: "Sexe",
-                                    class: "select"
-                                },
-                                SelectInputMut{
-                                    on_change: move |evt: FormEvent| {
-                                        use_beneficiary.with_mut(|val| val.Origin = evt.value.to_string());
-                                    },
-                                    value: use_beneficiary.read().Origin.to_string(),
-                                    values: Origins::get_selectable_values(),
-                                    list: Origins::get_labels(),
-                                    is_multiple: false ,
-                                    label: "Origine",
-                                    class: "select"
-                                },
-                            },
-                        div{
-                            class: "row",
-                            div{
-                                class: "inputs-row",
-                                NumberInputMut{
-                                    on_change: move |evt : FormEvent| {
-                                        use_beneficiary.with_mut(move|val| val.Adult = evt.value.parse::<u8>().unwrap_or_default());
-                                    },
-                                    value:use_beneficiary.read().Adult.to_string(),
-                                    label: "Adultes",
-                                    class: "adultes",
-                                    min: 0,
-                                    max: 50,
-                                },
-                                NumberInputMut{
-                                    on_change: move |evt: FormEvent|{
-                                        use_beneficiary.with_mut(move|val| val.Kid = evt.value.parse::<u8>().unwrap_or_default());
-                                    },
-                                    value: use_beneficiary.read().Kid.to_string(),
-                                    label: "Enfants",
-                                    class: "enfants",
-                                    min: 0,
-                                    max: 50,
-                                }
-                            },
-                            div{
-                                class: "inputs-row",
-                                TextInputMut{
-                                    on_input: move |evt: FormEvent| use_beneficiary.with_mut(|val| val.Phone = evt.value.to_string()),
-                                    on_change: move |_| {
-                                        use_beneficiary.with_mut(|val| val.set_phone());
-                                    },
-                                    value: use_beneficiary.read().Phone.to_string(),
-                                    label: "Téléphone",
-                                    class: "phone"
-                                },
-                                SwitchInputMut{
-                                    on_change: move |evt: FormEvent| {
-                                        use_beneficiary.with_mut(move |val| { val.IsActive = evt.value.parse::<bool>().unwrap_or_default()});
-                                    },
-                                    value: use_beneficiary.read().IsActive,
-                                    label: "Actif"
-                                },
-                            },
-                        },
+                h2{"Contact"},
+                div{
+                    class: "row",
+                    TextInputMut{
+                        on_input: move |evt: FormEvent|  use_beneficiary.with_mut(|val| val.Phone = evt.value.to_string()),
+                        on_change: move |_: FormEvent| {use_change.set(true)},
+                        value: use_beneficiary.read().get_phone(),
+                        class: "input",
+                        label: "Téléphone",
                     },
-                    div{
-                        class: "form-group allergies",
+                    TextInputMut{
+                        on_input: move |evt: FormEvent| use_beneficiary.with_mut(|val| val.Email = evt.value.to_string()),
+                        on_change: move |_: FormEvent| {use_change.set(true)},
+                        value: use_beneficiary.read().Email.to_string(),
+                        class: "input",
+                        label: "Email",
+                    },
+
+                },
+                h2{"Informations complémentaires"},
+                div{
+                    class: "row",
                         AllergiesInputMut{
                             beneficiary_id: use_beneficiary.read().Id,
                             details: use_details,
                         },
-                    },
-                   div{
-                       class: "form-group calendar",
-                       div{
+                    div{
+                        class: "form-group calendar",
+                        div{
                            class: "col",
                            label{"Présences"},
                            div{
@@ -192,42 +252,31 @@ pub fn Beneficiary(cx: Scoped, id: i32) -> Element {
                                 current_year: *use_year.get(),
                                 current_day: Local::now().day(),
                             },
-                       }
-                     },
-                    div{
-                        class: "form-group notes",
-                        TextAreaMut{
-                            on_input: move |evt: FormEvent| use_beneficiary.with_mut(|val| val.set_general_note(&evt.value)),
-                            on_change: move |_: FormEvent|{},
-                            value: use_beneficiary.read().GeneralNote.to_string(),
-                            label: "Notes",
-                            class: "",
+                        }
+                    },
+                    SwitchInputMut{
+                        on_change: move |evt: FormEvent| {
+                            use_beneficiary.with_mut(move |val| { val.IsActive = evt.value.parse::<bool>().unwrap_or_default()});
+                            use_change.set(true);
                         },
-
+                        value: use_beneficiary.read().IsActive,
+                        label: "Actif"
                     },
                 }
-            }
-
-    }
-}
-fn update_beneficiary(
-    cx: Scope,
-    beneficiary: &UseRef<crate::model::beneficiaries::beneficiary::Beneficiary>,
-    user: &UseSharedState<User>,
-    beneficiaries: &UseSharedState<Beneficiaries>,
-) {
-    use_future(cx, user, |user| {
-        let beneficiary = beneficiary.clone();
-        let beneficiaries = beneficiaries.clone();
-        async move {
-            let bene = beneficiary.read().clone();
-            if bene.update(user).await {
-                beneficiaries.with_mut(|val| val.update(&beneficiary.read()));
+                div{
+                    class: "row",
+                    TextAreaMut{
+                        on_input: move |evt: FormEvent| {},
+                        on_change: move |_: FormEvent|{use_change.set(true)},
+                        value: "".to_string(),
+                        label: "Notes",
+                        class: "full-width",
+                    },
+                },
             }
         }
-    });
+    }
 }
-
 fn add_date(
     cx: Scope<BeneficiaryProps>,
     user: &UseSharedState<User>,

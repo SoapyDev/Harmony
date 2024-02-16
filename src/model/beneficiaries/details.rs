@@ -7,11 +7,30 @@ use dioxus_hooks::{UseRef, UseSharedState};
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 
+enum NoteType {
+    General,
+    Admin,
+    Ts,
+    Situation
+}
+
+impl NoteType {
+    pub fn to_i8(&self) -> i8 {
+        match self {
+            NoteType::General => 0,
+            NoteType::Admin => 1,
+            NoteType::Ts => 2,
+            NoteType::Situation => 3,
+        }
+    }
+}
+
 #[derive(Encode, Decode, Serialize, Deserialize, Default, Clone)]
 pub(crate) struct Detail {
     pub(crate) id: i32,
     pub(crate) presences: Vec<Presence>,
     pub(crate) allergies: Vec<Allergy>,
+    pub(crate) notes: Vec<Notes>,
 }
 
 impl Detail {
@@ -99,6 +118,34 @@ impl Detail {
         }
         false
     }
+
+    pub(crate) fn get_general_notes(&self) -> Vec<&Notes> {
+        self.notes
+            .iter()
+            .filter(|n| n.Type == NoteType::General.to_i8())
+            .collect::<Vec<&Notes>>()
+    }
+
+    pub(crate) fn get_admin_notes(&self) -> Vec<&Notes> {
+        self.notes
+            .iter()
+            .filter(|n| n.Type == NoteType::Admin.to_i8())
+            .collect::<Vec<&Notes>>()
+    }
+
+    pub(crate) fn get_ts_notes(&self) -> Vec<&Notes> {
+        self.notes
+            .iter()
+            .filter(|n| n.Type == NoteType::Ts.to_i8())
+            .collect::<Vec<&Notes>>()
+    }
+
+    pub(crate) fn get_situation_notes(&self) -> Vec<&Notes> {
+        self.notes
+            .iter()
+            .filter(|n| n.Type == NoteType::Situation.to_i8())
+            .collect::<Vec<&Notes>>()
+    }
 }
 #[derive(Encode, Decode, Serialize, Deserialize, Clone, Debug)]
 pub(crate) struct Presence {
@@ -109,6 +156,14 @@ pub(crate) struct Presence {
 pub(crate) struct Allergy {
     pub(crate) BeneficiaryId: i32,
     pub(crate) Allergy: String,
+}
+
+#[derive(Encode, Decode, Serialize, Deserialize, Clone, Default)]
+pub(crate) struct Notes {
+    pub(crate) BeneficiaryId: i32,
+    pub(crate) Date: String,
+    pub(crate) Type: i8,
+    pub(crate) Note: String,
 }
 
 impl Display for Allergy {

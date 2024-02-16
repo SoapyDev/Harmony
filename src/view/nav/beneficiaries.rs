@@ -19,7 +19,7 @@ pub fn Home(cx: Scope) -> Element {
     load_beneficiaries(cx, user, beneficiaries);
 
     render! {
-        style{include_str!("../../assets/style/home.css")},
+        style{include_str!("../../assets/style/beneficiaries.css")},
         match user.read().Role.as_str() {
             "Admin" | "Dev" => render! {
                 admin::beneficiaries::Beneficiaries{}

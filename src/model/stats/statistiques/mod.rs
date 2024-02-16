@@ -10,3 +10,4 @@ pub(crate) mod presence;
 pub(crate) mod sexe;
 pub(crate) mod statistiques;
 pub(crate) mod study;
+pub(crate) mod amount;

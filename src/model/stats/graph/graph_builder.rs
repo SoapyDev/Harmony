@@ -71,8 +71,12 @@ impl GraphBuilder {
 
     #[cfg(target_os = "windows")]
     pub(crate) fn get_path(&self) -> PathBuf {
+        let dir = Path::new(".\\graph\\");
+        if !dir.exists() {
+            std::fs::create_dir_all(dir).unwrap();
+        }
         let file_name = self.get_file_name();
-        Path::new(".\\graph\\").join(file_name)
+        dir.join(file_name)
     }
     #[cfg(target_os = "linux")]
     pub(crate) fn get_path(&self) -> PathBuf {

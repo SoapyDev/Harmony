@@ -36,19 +36,15 @@ fn make_folder() -> Result<PathBuf, anyhow::Error> {
 
 #[cfg(target_os = "windows")]
 fn make_folder() -> Result<PathBuf, anyhow::Error> {
-    println!("windows");
     let current_user = std::env::var("USERPROFILE")?;
-    println!("{}", current_user);
     let current_date = chrono::Local::now().format("%d-%m-%Y_%H-%M-%S");
     let path = format!(
         "{}\\Downloads\\Harmony\\{}",
         current_user, current_date
     );
     let path = PathBuf::from(path);
-    println!("{:?}", path);
     if !path.exists() {
         fs::create_dir_all(path.clone())?;
-        println!("created");
     }
     Ok(path)
 }

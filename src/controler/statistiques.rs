@@ -1,12 +1,12 @@
 use crate::controler::connection::{ConnectionUrls, Token};
 use crate::model::stats::stats::{Stats, StatsRes};
 use bincode::{config, decode_from_slice};
-use ConnectionUrls::GetStats;
+use ConnectionUrls::SelectStats;
 
 impl Stats {
     pub(crate) async fn get_stats(token: Token) -> Result<Stats, anyhow::Error> {
         let res = reqwest::Client::new()
-            .post(GetStats.to_string())
+            .post(SelectStats.to_string())
             .json(&token)
             .send()
             .await?;

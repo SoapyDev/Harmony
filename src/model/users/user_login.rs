@@ -26,11 +26,11 @@ impl UserLogin {
         self.Password = password;
     }
     pub fn is_valid(&self) -> bool {
-        !self.Username.is_empty() && self.Password.len() >= 8
+        !self.Username.is_empty() && !self.Password.is_empty()
     }
 
     pub async fn login<'a>(
-        &self,
+        &mut self,
         user: UseSharedState<User>,
         navigator: Navigator,
     ) -> Result<(), anyhow::Error> {
@@ -41,10 +41,11 @@ impl UserLogin {
                     val.Token = other.Token;
                     val.Role = other.Role;
                 });
-                navigator.push("/home");
+                navigator.push("/beneficiaries");
             },
-            Err(e) => {
-                println!("{:?}", e);
+            Err(_) => {
+                self.set_username(String::new());
+                self.set_password(String::new());
             }
         }
         Ok(())

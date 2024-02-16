@@ -15,41 +15,55 @@ use rand::Rng;
 
 pub(crate) enum ConnectionUrls {
     Login,
-    GetUsers,
+    SelectUsers,
     CreateUser,
     UpdateUser,
     DeleteUser,
-    GetBeneficiaries,
-    GetBeneficiary,
+    SelectBeneficiaries,
+    SelectBeneficiary,
     SearchBeneficiary,
     CreateBeneficiary,
     UpdateBeneficiary,
-    InsertPresence,
+    CreatePresence,
     DeletePresence,
-    InsertAllergy,
+    CreateAllergy,
     DeleteAllergy,
-    GetStats,
+    CreateNote,
+    UpdateNote,
+    DeleteNote,
+    SelectCategory,
+    CreateCategory,
+    UpdateCategory,
+    DeleteCategory,
+    SelectStats,
 }
 
 impl Display for ConnectionUrls {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let base_url = var("CONNECTION_URL").unwrap();
         match self {
-            ConnectionUrls::Login => write!(f, "{}/login", base_url),
-            ConnectionUrls::GetUsers => write!(f, "{}/getUsers", base_url),
-            ConnectionUrls::CreateUser => write!(f, "{}/createUser", base_url),
-            ConnectionUrls::UpdateUser => write!(f, "{}/updateUser", base_url),
-            ConnectionUrls::DeleteUser => write!(f, "{}/deleteUser", base_url),
-            ConnectionUrls::GetBeneficiaries => write!(f, "{}/getBeneficiaries", base_url),
-            ConnectionUrls::GetBeneficiary => write!(f, "{}/getBeneficiary", base_url),
-            ConnectionUrls::SearchBeneficiary => write!(f, "{}/searchBeneficiaries", base_url),
-            ConnectionUrls::CreateBeneficiary => write!(f, "{}/createBeneficiary", base_url),
-            ConnectionUrls::UpdateBeneficiary => write!(f, "{}/updateBeneficiary", base_url),
-            ConnectionUrls::InsertPresence => write!(f, "{}/insertPresence", base_url),
-            ConnectionUrls::DeletePresence => write!(f, "{}/deletePresence", base_url),
-            ConnectionUrls::InsertAllergy => write!(f, "{}/insertAllergy", base_url),
-            ConnectionUrls::DeleteAllergy => write!(f, "{}/deleteAllergy", base_url),
-            ConnectionUrls::GetStats => write!(f, "{}/getStats", base_url),
+            ConnectionUrls::Login => write!(f, "{}/user/login", base_url),
+            ConnectionUrls::SelectUsers => write!(f, "{}/user/select", base_url),
+            ConnectionUrls::CreateUser => write!(f, "{}/user", base_url),
+            ConnectionUrls::UpdateUser => write!(f, "{}/user", base_url),
+            ConnectionUrls::DeleteUser => write!(f, "{}/user", base_url),
+            ConnectionUrls::SelectBeneficiaries => write!(f, "{}/beneficiary/select", base_url),
+            ConnectionUrls::SelectBeneficiary => write!(f, "{}/beneficiary/select/", base_url),
+            ConnectionUrls::SearchBeneficiary => write!(f, "{}/beneficiary/search", base_url),
+            ConnectionUrls::CreateBeneficiary => write!(f, "{}/beneficiary", base_url),
+            ConnectionUrls::UpdateBeneficiary => write!(f, "{}/beneficiary", base_url),
+            ConnectionUrls::CreatePresence => write!(f, "{}/presence", base_url),
+            ConnectionUrls::DeletePresence => write!(f, "{}/presence", base_url),
+            ConnectionUrls::CreateAllergy => write!(f, "{}/allergy", base_url),
+            ConnectionUrls::DeleteAllergy => write!(f, "{}/allergy", base_url),
+            ConnectionUrls::CreateNote => write!(f, "{}/note", base_url),
+            ConnectionUrls::UpdateNote => write!(f, "{}/note", base_url),
+            ConnectionUrls::DeleteNote => write!(f, "{}/note", base_url),
+            ConnectionUrls::SelectCategory => write!(f, "{}/category/select", base_url),
+            ConnectionUrls::CreateCategory => write!(f, "{}/category", base_url),
+            ConnectionUrls::UpdateCategory => write!(f, "{}/category", base_url),
+            ConnectionUrls::DeleteCategory => write!(f, "{}/category", base_url),
+            ConnectionUrls::SelectStats => write!(f, "{}/stats/select", base_url),
         }
     }
 }
@@ -108,7 +122,7 @@ pub(crate) struct TokenSearch {
 }
 
 pub(crate) fn encrypt(plaintext: &[u8]) -> String {
-    let env_key = dotenv::var("ENCRYPTION_KEY").expect("ENCRYPTION_KEY must be set");
+    let env_key = var("ENCRYPTION_KEY").expect("ENCRYPTION_KEY must be set");
     let key_bytes = general_purpose::STANDARD
         .decode(env_key)
         .expect("failed to decode key");
@@ -131,19 +145,20 @@ pub(crate) fn encrypt(plaintext: &[u8]) -> String {
 }
 
 pub(crate) fn decrypt(cipher_text: &str) -> Vec<u8> {
-    let env_key = dotenv::var("ENCRYPTION_KEY").expect("ENCRYPTION_KEY must be set");
+    let env_key = var("ENCRYPTION_KEY").expect("ENCRYPTION_KEY must be set");
     let key_bytes = general_purpose::STANDARD
         .decode(env_key)
         .expect("failed to decode key");
     let key = Key::from_slice(&key_bytes);
+
     let cipher = ChaCha20Poly1305::new(key);
+
     let (nonce_bytes, cipher_text_bytes) =
         cipher_text.split_once(':').expect("invalid cipher text");
     let nonce = general_purpose::STANDARD
         .decode(nonce_bytes)
         .expect("failed to decode nonce");
     if nonce.len() != 12 {
-        println!("Nonce: {:?} - With len : {}", nonce, nonce.len());
         return vec![];
     }
     let nonce = Nonce::from_slice(&nonce);

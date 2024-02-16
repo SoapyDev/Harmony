@@ -101,6 +101,35 @@ static ALLERGIES: &[&str; 13] = &[
 ];
 
 #[component]
+pub(crate) fn AllergiesInput(cx: Scope, detail: UseRef<Detail>) -> Element {
+    render! {
+        div{
+            class: "allergy-container",
+            div{
+                class: "select-container",
+                div{
+                    class: "select-allergies-container",
+                    label {"Allergies"},
+                    select {
+                        class : "form-control select-allergies",
+                        multiple : true,
+                        for element in detail.read().allergies.iter(){
+                            render!{
+                                option{
+                                    class: "allergy",
+                                    key: "{element}",
+                                    value: "{element}",
+                                    "{element}",
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+#[component]
 pub(crate) fn AllergiesInputMut<'a>(
     cx: Scope,
     beneficiary_id: i32,

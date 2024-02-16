@@ -1,4 +1,4 @@
-mod beneficiary_page;
+mod beneficiary;
 mod export;
-mod home;
+mod beneficiaries;
 pub(crate) mod navigation;

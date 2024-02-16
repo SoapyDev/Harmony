@@ -2,9 +2,9 @@ use crate::model::beneficiaries::beneficiary::Beneficiaries;
 use crate::model::users::{role::Role, user::User};
 use crate::view::admin::{stats::StatsPage, users::Users};
 use crate::view::login::Login;
-use crate::view::nav::beneficiary_page::BeneficiaryPage;
+use crate::view::nav::beneficiary::BeneficiaryPage;
 use crate::view::nav::export::export;
-use crate::view::nav::home::Home;
+use crate::view::nav::beneficiaries::Home;
 use dioxus::prelude::*;
 use dioxus_router::components::{Link, Outlet};
 use dioxus_router::hooks::use_navigator;
@@ -16,9 +16,9 @@ pub(crate) enum Route {
     #[route("/")]
     Login {},
     #[layout(Nav)]
-    #[route("/home")]
+    #[route("/beneficiaries")]
     Home {},
-    #[route("/home/:id")]
+    #[route("/beneficiary/:id")]
     BeneficiaryPage { id: i32 },
     #[route("/stats")]
     StatsPage {},
@@ -49,8 +49,7 @@ fn render_admin_nav<'a>(cx: Scope<'a>, user: &UseSharedState<User>) -> Element<'
 
     render! {
         nav {
-            div{
-            }
+            div{}
             ul {
                 li { Link { active_class:"active", to: Route::Home {}, "Bénéficiaires" } }
                 li { Link { active_class:"active", to: Route::StatsPage {},"Statistiques" } }

@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 
 use crate::controler::connection::ConnectionUrls;
-use crate::model::beneficiaries::details::{Allergy, Detail, Presence};
+use crate::model::beneficiaries::details::{Allergy, Detail, Notes, Presence};
 use serde::Serialize;
 
 #[derive(Clone, Serialize)]
@@ -18,13 +18,18 @@ pub(crate) struct TokenAllergy {
     pub(crate) Allergy: Allergy,
 }
 
+#[derive(Clone, Serialize)]
+pub(crate) struct TokenNote {
+    pub(crate) Token: String,
+    pub(crate) Content: Notes,
+}
 
 impl Detail {
     pub(crate) async fn insert_presence(
         token_presence: TokenPresence,
     ) -> Result<(), anyhow::Error> {
         let res = reqwest::Client::new()
-            .post(ConnectionUrls::InsertPresence.to_string())
+            .post(ConnectionUrls::CreatePresence.to_string())
             .json(&token_presence)
             .send()
             .await?;
@@ -53,7 +58,7 @@ impl Detail {
         token_allergy: TokenAllergy
     ) -> Result<(), anyhow::Error>{
         let res = reqwest::Client::new()
-            .post(ConnectionUrls::InsertAllergy.to_string())
+            .post(ConnectionUrls::CreateAllergy.to_string())
             .json(&token_allergy)
             .send()
             .await?;

@@ -11,7 +11,7 @@ impl Beneficiaries {
         token: Token,
     ) -> Result<Vec<Beneficiary>, anyhow::Error> {
         let bene = reqwest::Client::new()
-            .post(ConnectionUrls::GetBeneficiaries.to_string())
+            .post(ConnectionUrls::SelectBeneficiaries.to_string())
             .json(&token)
             .send()
             .await?;
@@ -26,7 +26,6 @@ impl Beneficiaries {
         let decoded = tokio::task::spawn_blocking(move || {
             let (decoded, _len): (Vec<Beneficiary>, usize) =
                 decode_from_slice(bytes.as_ref(), config)
-                    .map_err(|e| e)
                     .unwrap_or((vec![], 0));
             decoded
         })
@@ -94,7 +93,7 @@ impl Beneficiary {
         token_bene: TokenBeneficiaryId,
     ) -> Result<(Self, Detail), anyhow::Error> {
         let bene = reqwest::Client::new()
-            .post(ConnectionUrls::GetBeneficiary.to_string())
+            .post(ConnectionUrls::SelectBeneficiary.to_string())
             .json(&token_bene)
             .send()
             .await?;

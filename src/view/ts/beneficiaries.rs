@@ -1,7 +1,7 @@
 use crate::model::beneficiaries::beneficiary::{Beneficiaries, Beneficiary};
 use crate::model::users::user::User;
 use crate::view::nav::navigation::Route;
-use crate::view::table::beneficiary_ts_table::TsTable;
+use crate::view::table::beneficiaries_table::BeneficiariesTable;
 use dioxus::prelude::*;
 use dioxus_router::prelude::use_navigator;
 
@@ -44,7 +44,7 @@ pub fn Beneficiaries(cx: Scope) -> Element {
             class: "home-container",
              div{
                 class: "beneficiaries-container",
-                    TsTable{}
+                    BeneficiariesTable{}
                 div{
                     button{
                         class: "add-button",

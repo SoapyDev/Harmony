@@ -1,31 +1,32 @@
-use crate::model::beneficiaries::beneficiary::Beneficiaries;
-use dioxus::prelude::*;
-use dioxus_router::prelude::use_navigator;
+use crate::model::beneficiaries::beneficiary::{Beneficiaries, Beneficiary};
 use crate::model::users::user::User;
+use dioxus::prelude::*;
+use dioxus_router::hooks::use_navigator;
 
 #[component]
-pub fn TsTable(cx: Scope) -> Element {
-    let beneficiaries = use_shared_state::<Beneficiaries>(cx).unwrap();
-    let use_search = use_state(cx, String::new);
-    let filtered_beneficiaries = beneficiaries.read().filter(use_search);
-    let user = use_shared_state::<User>(cx).unwrap();
-    let use_id = use_state(cx, || 0);
+pub fn UserTable(cx: Scope) -> Element {
     let use_navigator = use_navigator(cx);
+    let user = use_shared_state::<User>(cx).unwrap();
+
+    let use_beneficiaries = use_shared_state::<Beneficiaries>(cx).unwrap();
+    let use_beneficiary = use_ref(cx, Beneficiary::default);
+    let mut selected = "";
+    let use_search = use_state(cx, String::new);
+    let beneficiaries = use_beneficiaries.read().filter(use_search);
+    let use_id = use_state(cx, || 0);
 
     use_future(cx, use_id, |id| {
         let use_navigator = use_navigator.clone();
         async move {
             if *id.get() > 99 {
-                println!("id: {}", id.get());
-                use_navigator.push(format!("/home/{}", id.get()));
+                use_navigator.push(format!("/beneficiary/{}", id.get()));
             }
         }
     });
 
+
+
     render! {
-        style{
-            include_str!("../../assets/style/ts_table.css"),
-        }
         input{
             class: "search-input",
             r#type: "text",
@@ -33,7 +34,7 @@ pub fn TsTable(cx: Scope) -> Element {
             class: "search-input",
             oninput: move |event| {
                 use_search.set(event.value.to_lowercase().clone());
-                search(cx, user, use_search, beneficiaries);
+                search(cx, user, use_search, use_beneficiaries);
             },
         },
         table{
@@ -47,23 +48,29 @@ pub fn TsTable(cx: Scope) -> Element {
                     th {"Date de naissance"},
                     th {"Adulte"},
                     th {"Enfant"},
-                    th {"Téléphone"},
-                    th {"Note"},
+                    th {"Allergies"},
+                    th {"Notes"},
                 },
             },
             tbody{
                 display: "block",
-                for beneficiary in filtered_beneficiaries.beneficiaries {
+                for beneficiary in beneficiaries.beneficiaries {
+                    if use_beneficiary.read().Id == beneficiary.Id {
+                        selected = "selected";
+                    }else{
+                        selected = "";
+                    }
                     tr{
                         ondblclick: move |_| {
                             use_id.set(beneficiary.Id);
                         },
-                        key: "{beneficiary.Id}",
+                        key: "{beneficiary.get_id()}",
+                        class: "{selected}",
                         td{"{beneficiary.get_full_name()}"},
                         td{"{beneficiary.get_birth()}"},
                         td{"{beneficiary.Adult}"},
                         td{"{beneficiary.Kid}"},
-                        td{"{beneficiary.get_phone()}"},
+                        td{"{beneficiary.has_allergies()}"},
                         td{"{beneficiary.has_general_note()}"},
                     }
                 },
@@ -72,21 +79,20 @@ pub fn TsTable(cx: Scope) -> Element {
     }
 }
 
-
-fn search(cx : Scope, user : &UseSharedState<User>, use_search: &UseState<String>, use_beneficiaries: &UseSharedState<Beneficiaries>){
-    use_future(cx, (user,use_search), |(user, search)| {
+fn search(
+    cx: Scope,
+    user: &UseSharedState<User>,
+    use_search: &UseState<String>,
+    use_beneficiaries: &UseSharedState<Beneficiaries>,
+) {
+    use_future(cx, (user, use_search), |(user, search)| {
         let use_beneficiaries = use_beneficiaries.clone();
         async move {
             if search.get().is_empty() || search.get().len() < 3 {
                 return;
             }
             let beneficiaries = Beneficiaries::search_beneficiaries(user, search.get()).await;
-            if beneficiaries.beneficiaries.is_empty() {
-                return;
-            }
             use_beneficiaries.with_mut(|benes| benes.insert_beneficiaries(beneficiaries));
         }
     });
-
 }
-

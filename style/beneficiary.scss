@@ -11,10 +11,10 @@
 
 .header {
   @include center(2rem, 2rem);
+  @include flex-row(space-between);
   width: 80%;
 
-
-  .back-button {
+  button {
     background: transparent;
     width: fit-content;
     border: none;
@@ -26,10 +26,11 @@
     }
   }
 
-  .back-button:hover {
+  button:hover {
     cursor: pointer;
     transform: scale(0.9);
   }
+
 }
 
 .beneficiary-container {
@@ -91,7 +92,7 @@
     }
 
     .row {
-      @include flex-row(space-between);
+      @include flex-row(center);
       @include center;
       gap: 2rem;
       width: 100%;
@@ -109,4 +110,19 @@
   .private-form.form {
     border-bottom: none;
   }
+}
+
+@media (max-width: 900px) {
+    .beneficiary-container .form .row {
+        flex-flow: column nowrap;
+        justify-content: center;
+        align-items: center;
+        gap: 2rem;
+        width: 100%;
+
+      .col,
+      select {
+        width: 80%;
+      }
+    }
 }

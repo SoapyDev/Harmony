@@ -30,7 +30,7 @@ pub fn create_pie(builder: &GraphBuilder) -> Result<(), Box<dyn Error>> {
     let mut labels = builder.get_labels();
     let colors = builder.get_colors();
 
-    let mut data = aggregate(data.to_vec(), &mut labels, 5.0);
+    let mut data = aggregate(data.to_vec(), &mut labels, 0.05);
     (data, labels) = sort(data, labels);
 
     let mut pie = Pie::new(&center, &radius, &data, colors, &labels);
@@ -49,9 +49,21 @@ pub fn create_pie(builder: &GraphBuilder) -> Result<(), Box<dyn Error>> {
 }
 
 fn aggregate(mut data: Vec<f64>, labels: &mut Vec<String>, threshold: f64) -> Vec<f64> {
+    data.push(0.0);
+    labels.push("Autres".to_string());
+
+    let sum = data.iter().sum::<f64>();
     let mut len = data.len();
+
     for i in (0..len).rev() {
-        if data[i] < threshold {
+        if data[i] < 0.01 {
+            labels.remove(i);
+            data.remove(i);
+            len -= 1;
+            continue;
+        }
+        if data[i] / sum < threshold {
+            data[0] += data[i];
             labels.remove(i);
             data.remove(i);
             len -= 1;

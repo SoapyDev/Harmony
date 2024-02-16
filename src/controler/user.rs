@@ -31,7 +31,7 @@ pub async fn login(user: &UserLogin) -> Result<User, anyhow::Error> {
 pub async fn get_users(token: Token) -> Result<Vec<UserRole>, anyhow::Error> {
     let config = config::standard();
     let response = reqwest::Client::new()
-        .post(ConnectionUrls::GetUsers.to_string())
+        .post(ConnectionUrls::SelectUsers.to_string())
         .json(&token)
         .send()
         .await?;
@@ -64,7 +64,6 @@ pub async fn create_user(user: UserToken) -> Result<UserRole, anyhow::Error> {
         .await?;
 
     if response.status() != reqwest::StatusCode::CREATED {
-        println!("{:?}", response.status());
         return Err(anyhow::Error::msg("Invalid credentials"));
     }
 

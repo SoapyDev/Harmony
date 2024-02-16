@@ -18,7 +18,7 @@ pub fn BeneficiaryPage(cx: Scope, id: i32) -> Element {
     }
 
     render! {
-        style{include_str!("../../assets/style/home.css")},
+        style{include_str!("../../assets/style/beneficiary.css")},
         match user.read().Role.as_str() {
             "Admin" | "Dev" => render! {
                 admin::beneficiary::Beneficiary{

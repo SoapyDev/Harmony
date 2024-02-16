@@ -41,7 +41,7 @@ pub(crate) fn Login(cx: Scope) -> Element {
                         evt.stop_propagation();
                         if user.read().is_valid(){
                             let _ = use_future(cx, (), |_| {
-                                let user = user.read().clone();
+                                let mut  user = user.read().clone();
                                 let user_token = user_token.clone();
                                 let navigator = navigator.clone();
                                 async move {
@@ -51,7 +51,7 @@ pub(crate) fn Login(cx: Scope) -> Element {
                         }
                     },
                     Username{
-                        min: 2,
+                        min: 3,
                         max: 45,
                         label: "Nom d'utilisateur",
                         user: user.clone(),
